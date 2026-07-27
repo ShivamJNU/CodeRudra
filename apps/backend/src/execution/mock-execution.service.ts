@@ -208,7 +208,7 @@ export class MockExecutionService extends ExecutionService {
         }
         if (error) {
           const errStr = stderr.toLowerCase();
-          if (errStr.includes('not recognized') || errStr.includes('not found') || errStr.includes('no such file')) {
+          if (errStr.includes('device guard') || errStr.includes('blocked') || errStr.includes('applocker') || errStr.includes('not recognized') || errStr.includes('not found') || errStr.includes('no such file')) {
             reject(new Error('Command not found'));
             return;
           }
@@ -236,7 +236,7 @@ export class MockExecutionService extends ExecutionService {
       exec(command, { timeout: timeoutMs }, (error, stdout, stderr) => {
         if (error) {
           const errStr = stderr.toLowerCase();
-          if (errStr.includes('not recognized') || errStr.includes('not found') || errStr.includes('no such file')) {
+          if (errStr.includes('device guard') || errStr.includes('blocked') || errStr.includes('applocker') || errStr.includes('not recognized') || errStr.includes('not found') || errStr.includes('no such file')) {
             reject(new Error('Command not found'));
             return;
           }
