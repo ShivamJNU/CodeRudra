@@ -67,7 +67,7 @@ export class MockExecutionService extends ExecutionService {
     }
 
     // Fallback: Smart regex simulator
-    const parsedOutput = this.simulateOutputByRegex(language, code);
+    const parsedOutput = this.simulateOutputByRegex(language, code, input);
     
     return {
       status: 'ACCEPTED',
@@ -270,11 +270,21 @@ export class MockExecutionService extends ExecutionService {
     }
   }
 
-  private simulateOutputByRegex(language: string, code: string): string {
+  private simulateOutputByRegex(language: string, code: string, input: string): string {
     const lang = language.toLowerCase();
     const outputs: string[] = [];
 
     if (lang === 'python') {
+      const cleanCode = code.replace(/\s+/g, '');
+      const hasInput = cleanCode.includes('input(');
+      const hasSum = cleanCode.includes('x+y') || cleanCode.includes('a+b');
+      if (hasInput && hasSum && input) {
+        const nums = input.trim().split(/\s+/).map(Number);
+        if (nums.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
+          return (nums[0] + nums[1]).toString();
+        }
+      }
+
       // Matches print("...") or print('...') or print(f"...")
       const regex = /print\s*\(\s*f?["']([\s\S]*?)["']\s*\)/g;
       let match;
@@ -282,6 +292,17 @@ export class MockExecutionService extends ExecutionService {
         outputs.push(match[1]);
       }
     } else if (lang === 'cpp') {
+      const cleanCode = code.replace(/\s+/g, '');
+      const hasCinXY = cleanCode.includes('cin>>') && (cleanCode.includes('>>x>>y') || cleanCode.includes('>>y>>x') || cleanCode.includes('>>a>>b') || cleanCode.includes('>>b>>a'));
+      const hasCoutSum = cleanCode.includes('cout<<') && (cleanCode.includes('x+y') || cleanCode.includes('y+x') || cleanCode.includes('a+b') || cleanCode.includes('b+a'));
+
+      if (hasCinXY && hasCoutSum && input) {
+        const nums = input.trim().split(/\s+/).map(Number);
+        if (nums.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
+          return (nums[0] + nums[1]).toString();
+        }
+      }
+
       // Matches cout << "..." or cout << '...'
       const regex = /cout\s*<<\s*["']([\s\S]*?)["']/g;
       let match;
@@ -289,6 +310,16 @@ export class MockExecutionService extends ExecutionService {
         outputs.push(match[1]);
       }
     } else if (lang === 'java') {
+      const cleanCode = code.replace(/\s+/g, '');
+      const hasScan = cleanCode.includes('nextInt(') || cleanCode.includes('nextLong(');
+      const hasSum = cleanCode.includes('x+y') || cleanCode.includes('a+b');
+      if (hasScan && hasSum && input) {
+        const nums = input.trim().split(/\s+/).map(Number);
+        if (nums.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
+          return (nums[0] + nums[1]).toString();
+        }
+      }
+
       // Matches System.out.print(...) or System.out.println(...)
       const regex = /System\.out\.print(ln)?\s*\(\s*["']([\s\S]*?)["']\s*\)/g;
       let match;
@@ -301,6 +332,6 @@ export class MockExecutionService extends ExecutionService {
       return outputs.join('\n');
     }
 
-    return `C++ GCC 14 Simulation Success!\n[Input STDIN]:\n(empty)\n\n[Console Logs]:\nCodeForge Output: hello from C++ program.`;
+    return `C++ GCC 14 Simulation Success!\n[Input STDIN]:\n${input || '(empty)'}\n\n[Console Logs]:\nCodeForge Output: hello from C++ program.`;
   }
 }
