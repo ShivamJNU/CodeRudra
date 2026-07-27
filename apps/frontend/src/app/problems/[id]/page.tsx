@@ -432,9 +432,14 @@ export default function ProblemWorkspace() {
         {isClient && typeof window !== 'undefined' && window.innerWidth >= 768 && (
           <div 
             onMouseDown={startResizeWidth}
-            className={`w-1 bg-zinc-900 hover:bg-violet-600 cursor-col-resize h-full transition-all select-none duration-150 relative z-30 flex items-center justify-center shrink-0 ${isResizingWidth ? 'bg-violet-500 w-1.5' : ''}`}
+            className="w-3 hover:bg-zinc-900/40 cursor-col-resize h-full select-none relative z-30 flex items-center justify-center shrink-0 group transition-colors duration-150"
           >
-            <div className="w-0.5 h-6 bg-zinc-800 rounded-full opacity-60" />
+            <div className={`w-[2px] h-full transition-colors duration-150 ${isResizingWidth ? 'bg-violet-500 w-[3px]' : 'bg-zinc-900 group-hover:bg-violet-600'}`} />
+            <div className="absolute w-1.5 h-6 bg-zinc-850 border border-zinc-800 rounded-full flex flex-col gap-0.5 items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <div className="w-[2px] h-[2px] bg-zinc-500 rounded-full" />
+              <div className="w-[2px] h-[2px] bg-zinc-500 rounded-full" />
+              <div className="w-[2px] h-[2px] bg-zinc-500 rounded-full" />
+            </div>
           </div>
         )}
 
@@ -468,7 +473,7 @@ export default function ProblemWorkspace() {
           </div>
 
           {/* Monaco Editor Container */}
-          <div className="flex-1 min-h-[300px] border-b border-zinc-900 bg-zinc-950">
+          <div className={`flex-1 min-h-[100px] border-b border-zinc-900 bg-zinc-950 ${isResizingWidth || isResizingHeight ? 'pointer-events-none' : ''}`}>
             <Editor
               height="100%"
               language={language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'python'}
@@ -539,9 +544,14 @@ export default function ProblemWorkspace() {
           {/* Horizontal Resizer Handle */}
           <div 
             onMouseDown={startResizeHeight}
-            className={`h-1 bg-zinc-900 hover:bg-violet-600 cursor-row-resize w-full transition-all select-none duration-150 relative z-30 flex items-center justify-center shrink-0 ${isResizingHeight ? 'bg-violet-500 h-1.5' : ''}`}
+            className="h-3 hover:bg-zinc-900/40 cursor-row-resize w-full select-none relative z-30 flex items-center justify-center shrink-0 group transition-colors duration-150"
           >
-            <div className="h-0.5 w-6 bg-zinc-800 rounded-full opacity-60" />
+            <div className={`h-[2px] w-full transition-colors duration-150 ${isResizingHeight ? 'bg-violet-500 h-[3px]' : 'bg-zinc-900 group-hover:bg-violet-600'}`} />
+            <div className="absolute w-6 h-1.5 bg-zinc-850 border border-zinc-800 rounded-full flex gap-0.5 items-center justify-center pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+              <div className="w-[2px] h-[2px] bg-zinc-500 rounded-full" />
+              <div className="w-[2px] h-[2px] bg-zinc-500 rounded-full" />
+              <div className="w-[2px] h-[2px] bg-zinc-500 rounded-full" />
+            </div>
           </div>
 
           {/* Console / Output Drawer */}
