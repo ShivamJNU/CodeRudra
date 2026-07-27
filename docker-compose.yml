@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Redis for BullMQ and Caching (port 6379)
+  redis:
+    image: redis:7.2-alpine
+    container_name: codeforge-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # --- Judge0 CE Services (Optional Local Sandbox) ---
+  judge0-db:
+    image: postgres:16-alpine
+    container_name: judge0-db
+    environment:
+      POSTGRES_DB: judge0
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: judge0_password
+    volumes:
+      - judge0-db-data:/var/lib/postgresql/data
+    restart: always
+
+  judge0-redis:
+    image: redis:7.2-alpine
+    container_name: judge0-redis
+    restart: always
+
+  judge0-api:
+    image: judge0/judge0:latest
+    container_name: judge0-api
+    ports:
+      - "2358:2358"
+    environment:
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - DB_HOST=judge0-db
+      - DB_PORT=5432
+      - DB_USER=judge0
+      - DB_PASSWORD=judge0_password
+      - DB_NAME=judge0
+    depends_on:
+      - judge0-db
+      - judge0-redis
+    restart: always
+
+  judge0-worker:
+    image: judge0/judge0:latest
+    container_name: judge0-worker
+    command: ["./scripts/run-worker"]
+    environment:
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - DB_HOST=judge0-db
+      - DB_PORT=5432
+      - DB_USER=judge0
+      - DB_PASSWORD=judge0_password
+      - DB_NAME=judge0
+    depends_on:
+      - judge0-db
+      - judge0-redis
+    restart: always
+
+volumes:
+  judge0-db-data:

@@ -1,0 +1,561 @@
+'use client';
+
+import { useState, useEffect, useRef } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { useAuthStore, useEditorStore } from '@/lib/store';
+import api from '@/lib/api';
+import Editor from '@monaco-editor/react';
+import { 
+  ArrowLeft, Terminal, Cpu, Play, CheckCircle2, 
+  Save, AlertTriangle, FileUp, Sparkles, Code2, 
+  HelpCircle, History, Settings 
+} from 'lucide-react';
+
+export default function ProblemWorkspace() {
+  const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+
+  const { user, initializeAuth, isAuthenticated } = useAuthStore();
+  const { language, code, setLanguage, setCode } = useEditorStore();
+
+  // Workspace states
+  const [problem, setProblem] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'details' | 'submissions'>('details');
+  const [submissions, setSubmissions] = useState<any[]>([]);
+
+  // Execution states
+  const [customInput, setCustomInput] = useState('');
+  const [executing, setExecuting] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [runResult, setRunResult] = useState<any>(null);
+  const [consoleTab, setConsoleTab] = useState<'input' | 'output'>('output');
+
+  // Save code modal states
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [saveTitle, setSaveTitle] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // File Upload reference
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    initializeAuth();
+    if (!useAuthStore.getState().isAuthenticated) {
+      router.push('/');
+      return;
+    }
+    fetchWorkspaceData();
+  }, [router, initializeAuth, id]);
+
+  const fetchWorkspaceData = async () => {
+    setLoading(true);
+    try {
+      const [probRes, subsRes] = await Promise.all([
+        api.get(`/problems/${id}`),
+        api.get('/history'),
+      ]);
+      setProblem(probRes.data);
+      
+      // Filter submissions for this problem only
+      const problemSubs = subsRes.data.filter((s: any) => s.problemId === id);
+      setSubmissions(problemSubs);
+      setSaveTitle(probRes.data.title + ' Solution');
+    } catch (err) {
+      console.error('Failed to load workspace:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Max file size is 5 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setCustomInput(event.target.result as string);
+        setConsoleTab('input');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleRunCode = async () => {
+    setExecuting(true);
+    setConsoleTab('output');
+    setRunResult({ status: 'RUNNING', message: 'Compiling & Running...' });
+
+    try {
+      const res = await api.post('/execute', {
+        sourceCode: code,
+        language,
+        input: customInput,
+      });
+
+      setRunResult(res.data);
+    } catch (err: any) {
+      console.error(err);
+      setRunResult({
+        status: 'RUNTIME_ERROR',
+        error: 'Failed to communicate with compiler backend. Ensure NestJS port is 5000.',
+      });
+    } finally {
+      setExecuting(false);
+    }
+  };
+
+  const handleSubmitCode = async () => {
+    setSubmitting(true);
+    setConsoleTab('output');
+    setRunResult({ status: 'RUNNING', message: 'Running test cases against solution...' });
+
+    try {
+      const res = await api.post('/submit', {
+        problemId: id,
+        sourceCode: code,
+        language,
+      });
+
+      setRunResult(res.data);
+      // Reload submissions list
+      const subsRes = await api.get('/history');
+      setSubmissions(subsRes.data.filter((s: any) => s.problemId === id));
+    } catch (err: any) {
+      console.error(err);
+      setRunResult({
+        status: 'RUNTIME_ERROR',
+        error: 'Evaluation failed. Make sure compiler engine is running.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSaveCode = async () => {
+    if (!saveTitle.trim()) return;
+    setSaving(true);
+    try {
+      await api.post('/codes', {
+        problemId: id,
+        title: saveTitle,
+        language,
+        sourceCode: code,
+      });
+      setShowSaveModal(false);
+      alert('Code saved successfully! You can access it on your Dashboard.');
+    } catch (err) {
+      console.error('Failed to save code:', err);
+      alert('Failed to save code. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading || !problem) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-zinc-950 text-zinc-50 font-sans">
+        <div className="animate-spin h-8 w-8 rounded-full border-4 border-violet-500 border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans flex flex-col h-screen overflow-hidden">
+      {/* Top Navbar */}
+      <header className="w-full border-b border-zinc-900 bg-zinc-950 px-6 py-4 flex items-center justify-between z-10 shrink-0">
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => router.push('/dashboard')}
+            className="p-2 rounded-lg border border-zinc-900 hover:border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-white cursor-pointer"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <div>
+            <h2 className="font-bold text-lg text-zinc-200">{problem.title}</h2>
+            <p className="text-xs text-zinc-500 capitalize">Arena Playground &bull; Limits: {problem.timeLimit}s / {problem.memoryLimit}MB</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowSaveModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 text-zinc-300 text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+          >
+            <Save className="h-3.5 w-3.5" />
+            <span>Save Solution</span>
+          </button>
+          
+          <img 
+            src={user?.image || `https://api.dicebear.com/7.x/bottts/svg?seed=${user?.name}`} 
+            alt={user?.name} 
+            className="h-8 w-8 rounded-full border border-zinc-800 bg-zinc-900 hidden sm:inline"
+          />
+        </div>
+      </header>
+
+      {/* Save Code Modal */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-2xl w-full max-w-sm flex flex-col gap-4 text-left shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <h3 className="text-lg font-bold text-zinc-200">Save Your Code</h3>
+            <p className="text-xs text-zinc-500">Provide a name so you can search and manage this solution from your dashboard later.</p>
+            
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Solution Title</label>
+              <input 
+                type="text" 
+                value={saveTitle}
+                onChange={(e) => setSaveTitle(e.target.value)}
+                placeholder="e.g. My Optimal Two Sum Solution"
+                className="bg-zinc-950 border border-zinc-800 focus:border-violet-500 rounded-xl px-4 py-2 text-sm text-zinc-200 focus:outline-none transition-colors"
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end mt-2">
+              <button 
+                onClick={() => setShowSaveModal(false)}
+                className="px-4 py-2 border border-zinc-800 hover:bg-zinc-800 text-zinc-400 rounded-xl text-xs font-bold cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveCode}
+                disabled={saving || !saveTitle.trim()}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold cursor-pointer shadow-lg active:scale-95 transition-all"
+              >
+                {saving ? 'Saving...' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Workspace Panels */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+        
+        {/* Left Side: Challenge Details */}
+        <div className="flex-1 md:w-5/12 border-r border-zinc-900 flex flex-col bg-zinc-950/60 overflow-hidden">
+          {/* Tab selector */}
+          <div className="flex border-b border-zinc-900 bg-zinc-950 shrink-0">
+            <button 
+              onClick={() => setActiveTab('details')}
+              className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-colors duration-150 ${
+                activeTab === 'details' 
+                  ? 'border-violet-500 text-violet-400' 
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              Challenge
+            </button>
+            <button 
+              onClick={() => setActiveTab('submissions')}
+              className={`px-6 py-3 text-xs font-bold uppercase tracking-wider border-b-2 cursor-pointer transition-colors duration-150 ${
+                activeTab === 'submissions' 
+                  ? 'border-violet-500 text-violet-400' 
+                  : 'border-transparent text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              My Submissions
+            </button>
+          </div>
+
+          {/* Tab Content Panels */}
+          <div className="flex-1 overflow-y-auto p-6 text-left leading-relaxed">
+            {activeTab === 'details' ? (
+              <div className="flex flex-col gap-6">
+                <div>
+                  <span className={`inline-block font-semibold px-2 py-0.5 text-xs rounded-full border ${
+                    problem.difficulty === 'EASY' 
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                      : problem.difficulty === 'MEDIUM' 
+                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' 
+                      : 'bg-red-500/10 border-red-500/20 text-red-400'
+                  }`}>
+                    {problem.difficulty}
+                  </span>
+                </div>
+
+                <div className="prose prose-invert max-w-none text-zinc-300 text-sm">
+                  <p className="whitespace-pre-wrap">{problem.description}</p>
+                </div>
+
+                {problem.constraints && (
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-2">Constraints</h4>
+                    <pre className="p-3 bg-zinc-900/50 border border-zinc-900 rounded-xl text-xs font-mono text-zinc-400 leading-normal whitespace-pre-wrap">
+                      {problem.constraints}
+                    </pre>
+                  </div>
+                )}
+
+                {problem.inputFormat && (
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-2">Input Format</h4>
+                    <p className="text-zinc-400 text-xs">{problem.inputFormat}</p>
+                  </div>
+                )}
+
+                {problem.outputFormat && (
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-2">Output Format</h4>
+                    <p className="text-zinc-400 text-xs">{problem.outputFormat}</p>
+                  </div>
+                )}
+
+                {/* Sample Testcases */}
+                {problem.testCases && problem.testCases.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-3">Sample Examples</h4>
+                    <div className="flex flex-col gap-4">
+                      {problem.testCases.map((tc: any, index: number) => (
+                        <div key={tc.id || index} className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-[10px] text-zinc-500 font-bold uppercase">Sample Input {index + 1}</span>
+                            <pre className="p-3 bg-zinc-900/40 border border-zinc-900 rounded-xl text-xs font-mono text-zinc-300 overflow-x-auto whitespace-pre">
+                              {tc.input}
+                            </pre>
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-[10px] text-zinc-500 font-bold uppercase">Expected Output {index + 1}</span>
+                            <pre className="p-3 bg-zinc-900/40 border border-zinc-900 rounded-xl text-xs font-mono text-zinc-300 overflow-x-auto whitespace-pre">
+                              {tc.output}
+                            </pre>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                {submissions.length === 0 ? (
+                  <div className="text-center py-12 text-zinc-600 text-sm">
+                    <History className="h-8 w-8 mx-auto text-zinc-700 mb-2" />
+                    <span>No submissions yet for this challenge. Write some code and click Submit!</span>
+                  </div>
+                ) : (
+                  submissions.map((sub) => (
+                    <div 
+                      key={sub.id}
+                      className="p-4 rounded-xl border border-zinc-900 bg-zinc-900/10 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <span className={`font-bold uppercase tracking-wider ${
+                          sub.status === 'ACCEPTED' ? 'text-emerald-400' : 'text-red-400'
+                        }`}>
+                          {sub.status}
+                        </span>
+                        <span className="text-zinc-500 font-mono">
+                          Runtime: {sub.runtime}s &bull; Memory: {sub.memory ? Math.round(sub.memory) : 0} KB
+                        </span>
+                      </div>
+                      <span className="text-zinc-600 font-medium">
+                        {new Date(sub.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side: Monaco Editor & Output Console */}
+        <div className="flex-1 md:w-7/12 flex flex-col bg-zinc-950 overflow-hidden h-full">
+          
+          {/* Editor Header Settings */}
+          <div className="px-6 py-3 border-b border-zinc-900 bg-zinc-950/80 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-semibold bg-zinc-900 px-3 py-1.5 rounded-lg border border-zinc-800">
+                <Code2 className="h-3.5 w-3.5 text-violet-400" />
+                <span>Language:</span>
+                <select 
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as any)}
+                  className="bg-transparent text-white focus:outline-none capitalize font-bold cursor-pointer"
+                >
+                  <option value="cpp" className="bg-zinc-950 text-white">C++ (GCC 14)</option>
+                  <option value="java" className="bg-zinc-950 text-white">Java (OpenJDK 21)</option>
+                  <option value="python" className="bg-zinc-950 text-white">Python (Python 3.12)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="text-xs text-zinc-500 font-mono">
+              Main.{language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'py'}
+            </div>
+          </div>
+
+          {/* Monaco Editor Container */}
+          <div className="flex-1 min-h-[300px] border-b border-zinc-900 bg-zinc-950">
+            <Editor
+              height="100%"
+              language={language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'python'}
+              theme="vs-dark"
+              value={code}
+              onChange={(val) => setCode(val || '')}
+              options={{
+                fontSize: 14,
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                padding: { top: 16, bottom: 16 },
+                fontFamily: "var(--font-geist-mono), monospace",
+              }}
+            />
+          </div>
+
+          {/* Action Row */}
+          <div className="px-6 py-3 border-b border-zinc-900 bg-zinc-950/90 flex items-center justify-between shrink-0">
+            {/* Left Upload input text */}
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-900 bg-zinc-950 hover:bg-zinc-900 text-zinc-400 hover:text-zinc-200 text-xs font-semibold cursor-pointer transition-all"
+              >
+                <FileUp className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Upload Input.txt</span>
+              </button>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                accept=".txt"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+
+            {/* Right Execution triggers */}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleRunCode}
+                disabled={executing || submitting}
+                className="px-4 py-2 border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-900 hover:border-zinc-700 disabled:opacity-50 text-zinc-300 text-xs font-bold rounded-lg cursor-pointer flex items-center gap-1.5 active:scale-95 transition-all"
+              >
+                {executing ? (
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
+                ) : (
+                  <Play className="h-3.5 w-3.5" />
+                )}
+                <span>Run Code</span>
+              </button>
+
+              <button
+                onClick={handleSubmitCode}
+                disabled={executing || submitting}
+                className="px-5 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-black rounded-lg cursor-pointer flex items-center gap-1.5 active:scale-95 transition-all shadow-lg shadow-violet-600/10"
+              >
+                {submitting ? (
+                  <div className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                )}
+                <span>Submit</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Console / Output Drawer */}
+          <div className="h-[200px] shrink-0 bg-zinc-950 border-t border-zinc-900 flex flex-col min-h-0 text-left">
+            {/* Console Tabs */}
+            <div className="flex border-b border-zinc-900 bg-zinc-950 shrink-0">
+              <button
+                onClick={() => setConsoleTab('input')}
+                className={`px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer border-b-2 transition-colors duration-150 ${
+                  consoleTab === 'input' 
+                    ? 'border-violet-500 text-violet-400' 
+                    : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                Custom Input
+              </button>
+              <button
+                onClick={() => setConsoleTab('output')}
+                className={`px-5 py-2.5 text-[10px] font-bold uppercase tracking-wider cursor-pointer border-b-2 transition-colors duration-150 ${
+                  consoleTab === 'output' 
+                    ? 'border-violet-500 text-violet-400' 
+                    : 'border-transparent text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                Result / Console
+              </button>
+            </div>
+
+            {/* Console Screen */}
+            <div className="flex-1 overflow-y-auto bg-zinc-950 p-4 font-mono text-xs text-zinc-300">
+              {consoleTab === 'input' ? (
+                <textarea
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  placeholder="Enter inputs here (e.g., 5\n1 2 3 4 5)"
+                  className="w-full h-full bg-transparent border-0 resize-none text-zinc-300 focus:outline-none focus:ring-0 leading-normal"
+                />
+              ) : (
+                <div className="h-full flex flex-col">
+                  {!runResult ? (
+                    <div className="text-zinc-600 italic">No execution run yet. Write some code and press 'Run Code' or 'Submit'.</div>
+                  ) : runResult.status === 'RUNNING' ? (
+                    <div className="flex items-center gap-2 text-zinc-400 animate-pulse">
+                      <Terminal className="h-4 w-4 animate-spin text-violet-500" />
+                      <span>{runResult.message}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-3">
+                      {/* Status header */}
+                      <div className="flex items-center justify-between bg-zinc-900/60 p-2.5 rounded-xl border border-zinc-900 shrink-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-black uppercase tracking-wider text-[11px] px-2 py-0.5 rounded border ${
+                            runResult.status === 'ACCEPTED' 
+                              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
+                              : 'bg-red-500/10 border-red-500/20 text-red-400'
+                          }`}>
+                            {runResult.status}
+                          </span>
+                          <span className="text-zinc-500">|</span>
+                          <span className="text-zinc-400">Runtime: {runResult.runtime ?? 0}s</span>
+                          <span className="text-zinc-500">|</span>
+                          <span className="text-zinc-400">Memory: {runResult.memory ? Math.round(runResult.memory) : 0} KB</span>
+                        </div>
+                      </div>
+
+                      {/* Code Execution text stream */}
+                      {runResult.error ? (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                            <AlertTriangle className="h-3 w-3" />
+                            <span>Error logs</span>
+                          </span>
+                          <pre className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-red-400 text-[11px] font-mono leading-normal whitespace-pre-wrap select-text">
+                            {runResult.error}
+                          </pre>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1">
+                          <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Stdout Output</span>
+                          <pre className="p-3 bg-zinc-900/30 border border-zinc-900 rounded-xl text-zinc-300 text-[11px] font-mono leading-normal whitespace-pre-wrap select-text">
+                            {runResult.output || '(No console logs / output returned)'}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}

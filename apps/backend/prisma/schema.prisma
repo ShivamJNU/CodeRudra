@@ -1,0 +1,75 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String       @id @default(uuid())
+  googleId     String       @unique
+  name         String
+  email        String       @unique
+  profileImage String?
+  createdAt    DateTime     @default(now())
+  savedCodes   SavedCode[]
+  submissions  Submission[]
+}
+
+model Problem {
+  id           String       @id @default(uuid())
+  title        String
+  description  String
+  difficulty   String       // EASY, MEDIUM, HARD
+  constraints  String?
+  inputFormat  String?
+  outputFormat String?
+  timeLimit    Float        @default(2.0) // in seconds
+  memoryLimit  Float        @default(256.0) // in MB
+  createdAt    DateTime     @default(now())
+  testCases    TestCase[]
+  savedCodes   SavedCode[]
+  submissions  Submission[]
+}
+
+model TestCase {
+  id        String  @id @default(uuid())
+  problemId String
+  problem   Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+  input     String
+  output    String
+  isSample  Boolean @default(false)
+}
+
+model SavedCode {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId  String?
+  problem    Problem? @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  title      String
+  language   String   // cpp, java, python
+  sourceCode String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Submission {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  problemId  String?
+  problem    Problem? @relation(fields: [problemId], references: [id], onDelete: SetNull)
+  language   String   // cpp, java, python
+  sourceCode String
+  input      String?  // custom input if run
+  output     String?  // actual output
+  runtime    Float?   // in seconds
+  memory     Float?   // in KB
+  status     String   // ACCEPTED, WRONG_ANSWER, TIME_LIMIT_EXCEEDED, MEMORY_LIMIT_EXCEEDED, COMPILATION_ERROR, RUNTIME_ERROR, PENDING
+  error      String?  // error details (e.g. compilation errors)
+  createdAt  DateTime @default(now())
+}
