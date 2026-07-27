@@ -39,3 +39,7 @@ logs/
 # System Files
 .DS_Store
 Thumbs.db
+
+# Temp executions
+temp_exec/
+*.exe
