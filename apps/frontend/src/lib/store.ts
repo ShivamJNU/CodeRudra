@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import api from './api';
 
 export interface User {
   id: string;
@@ -14,7 +15,7 @@ interface AuthState {
   setToken: (token: string | null) => void;
   setUser: (user: User | null) => void;
   logout: () => void;
-  initializeAuth: () => void;
+  initializeAuth: () => Promise<void>;
 }
 
 interface EditorState {
@@ -42,11 +43,19 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem('token');
     set({ token: null, user: null, isAuthenticated: false });
   },
-  initializeAuth: () => {
+  initializeAuth: async () => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('token');
       if (token) {
         set({ token, isAuthenticated: true });
+        try {
+          const res = await api.get('/me');
+          set({ user: res.data });
+        } catch (err) {
+          console.error('Failed to restore user session:', err);
+          localStorage.removeItem('token');
+          set({ token: null, user: null, isAuthenticated: false });
+        }
       }
     }
   },
