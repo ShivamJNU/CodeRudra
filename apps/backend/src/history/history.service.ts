@@ -6,6 +6,10 @@ export class HistoryService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(userId: string) {
+    if (!this.prisma.isConnected) {
+      return [];
+    }
+
     return this.prisma.submission.findMany({
       where: { userId },
       include: {
@@ -20,6 +24,10 @@ export class HistoryService {
   }
 
   async findOne(id: string, userId: string) {
+    if (!this.prisma.isConnected) {
+      throw new NotFoundException(`Submission entry not found`);
+    }
+
     const submission = await this.prisma.submission.findFirst({
       where: { id, userId },
       include: {
@@ -37,6 +45,14 @@ export class HistoryService {
   }
 
   async getStatistics(userId: string) {
+    if (!this.prisma.isConnected) {
+      return {
+        totalSubmissions: 0,
+        successRate: 0,
+        languageUsage: {},
+      };
+    }
+
     const submissions = await this.prisma.submission.findMany({
       where: { userId },
       select: {

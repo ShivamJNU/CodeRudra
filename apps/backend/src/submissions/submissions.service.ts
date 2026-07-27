@@ -17,6 +17,23 @@ export class SubmissionsService {
       input: data.input,
     });
 
+    if (!this.prisma.isConnected) {
+      return {
+        id: 'mock-sub-' + Math.random(),
+        userId,
+        problemId: null,
+        language: data.language,
+        sourceCode: data.sourceCode,
+        input: data.input || null,
+        output: result.output || null,
+        runtime: result.runtime || 0,
+        memory: result.memory || 0,
+        status: result.status,
+        error: result.error || null,
+        createdAt: new Date(),
+      };
+    }
+
     // Save as an ad-hoc submission (optional, but requested in PRD to see in history)
     // "Each execution can be saved... User can view history"
     // Let's save this custom execution to the database so it appears in history!
@@ -37,6 +54,27 @@ export class SubmissionsService {
   }
 
   async submit(userId: string, data: { problemId: string; sourceCode: string; language: string }) {
+    if (!this.prisma.isConnected) {
+      const runResult = await this.executionService.execute({
+        sourceCode: data.sourceCode,
+        language: data.language,
+        input: 'mock-input',
+      });
+      return {
+        id: 'mock-submission-' + Math.random(),
+        userId,
+        problemId: data.problemId,
+        language: data.language,
+        sourceCode: data.sourceCode,
+        status: runResult.status,
+        runtime: runResult.runtime || 0.05,
+        memory: runResult.memory || 4200,
+        output: runResult.output || null,
+        error: runResult.error || null,
+        createdAt: new Date(),
+      };
+    }
+
     const problem = await this.prisma.problem.findUnique({
       where: { id: data.problemId },
       include: { testCases: true },

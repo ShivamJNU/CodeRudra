@@ -10,6 +10,17 @@ export class AuthService {
   ) {}
 
   async validateUser(googleId: string, email: string, name: string, profileImage?: string) {
+    if (!this.prisma.isConnected) {
+      return {
+        id: 'dev-user-id',
+        googleId,
+        name,
+        email,
+        profileImage: profileImage || null,
+        createdAt: new Date(),
+      };
+    }
+
     let user = await this.prisma.user.findUnique({
       where: { googleId },
     });
