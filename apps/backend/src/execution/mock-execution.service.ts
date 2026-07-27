@@ -10,14 +10,14 @@ export class MockExecutionService extends ExecutionService {
     // Artificial delay to simulate compiler run
     await new Promise((resolve) => setTimeout(resolve, 800));
 
-    if (code.includes('compile_error') || code.includes('compiler_error')) {
+    if (code.includes('trigger:compile_error') || code.includes('trigger:compiler_error')) {
       return {
         status: 'COMPILATION_ERROR',
         error: `In file included from main.cpp:1:\nmain.cpp: In function 'int main()':\nmain.cpp:5:10: error: expected ';' before 'return'\n    5 |   cout << "Error"\n      |          ^\n      |          ;`,
       };
     }
 
-    if (code.includes('timeout') || code.includes('tle') || code.includes('infinite_loop')) {
+    if (code.includes('trigger:timeout') || code.includes('trigger:tle') || code.includes('trigger:infinite_loop')) {
       return {
         status: 'TIME_LIMIT_EXCEEDED',
         runtime: 2.05,
@@ -26,7 +26,7 @@ export class MockExecutionService extends ExecutionService {
       };
     }
 
-    if (code.includes('mle') || code.includes('memory_limit')) {
+    if (code.includes('trigger:mle') || code.includes('trigger:memory_limit')) {
       return {
         status: 'MEMORY_LIMIT_EXCEEDED',
         runtime: 0.12,
@@ -35,7 +35,7 @@ export class MockExecutionService extends ExecutionService {
       };
     }
 
-    if (code.includes('runtime_error') || code.includes('re') || code.includes('exception')) {
+    if (code.includes('trigger:runtime_error') || code.includes('trigger:re') || code.includes('trigger:exception')) {
       return {
         status: 'RUNTIME_ERROR',
         runtime: 0.04,
@@ -44,7 +44,7 @@ export class MockExecutionService extends ExecutionService {
       };
     }
 
-    if (code.includes('wrong_answer') || code.includes('wa')) {
+    if (code.includes('trigger:wrong_answer') || code.includes('trigger:wa')) {
       return {
         status: 'WRONG_ANSWER',
         output: 'Your Output: hello world\nExpected Output: Hello World!',
