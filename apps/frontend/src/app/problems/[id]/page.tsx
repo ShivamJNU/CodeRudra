@@ -103,9 +103,10 @@ export default function ProblemWorkspace() {
       setRunResult(res.data);
     } catch (err: any) {
       console.error(err);
+      const errMsg = err.response?.data?.message || err.message || 'Failed to communicate with compiler backend. Ensure NestJS port is 5000.';
       setRunResult({
         status: 'RUNTIME_ERROR',
-        error: 'Failed to communicate with compiler backend. Ensure NestJS port is 5000.',
+        error: errMsg,
       });
     } finally {
       setExecuting(false);
@@ -130,9 +131,10 @@ export default function ProblemWorkspace() {
       setSubmissions(subsRes.data.filter((s: any) => s.problemId === id));
     } catch (err: any) {
       console.error(err);
+      const errMsg = err.response?.data?.message || err.message || 'Evaluation failed. Make sure compiler engine is running.';
       setRunResult({
         status: 'RUNTIME_ERROR',
-        error: 'Evaluation failed. Make sure compiler engine is running.',
+        error: errMsg,
       });
     } finally {
       setSubmitting(false);
