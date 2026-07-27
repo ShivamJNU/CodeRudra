@@ -25,6 +25,60 @@ export default function ProblemWorkspace() {
   const [activeTab, setActiveTab] = useState<'details' | 'submissions'>('details');
   const [submissions, setSubmissions] = useState<any[]>([]);
 
+  // Resizable panels states
+  const [leftWidth, setLeftWidth] = useState(40); // in percentage
+  const [consoleHeight, setConsoleHeight] = useState(250); // in pixels
+  const [isResizingWidth, setIsResizingWidth] = useState(false);
+  const [isResizingHeight, setIsResizingHeight] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const startResizeWidth = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingWidth(true);
+  };
+
+  const startResizeHeight = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizingHeight(true);
+  };
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingWidth) {
+        const percentage = (e.clientX / window.innerWidth) * 100;
+        if (percentage >= 20 && percentage <= 80) {
+          setLeftWidth(percentage);
+        }
+      }
+
+      if (isResizingHeight) {
+        const height = window.innerHeight - e.clientY;
+        if (height >= 100 && height <= window.innerHeight - 200) {
+          setConsoleHeight(height);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingWidth(false);
+      setIsResizingHeight(false);
+    };
+
+    if (isResizingWidth || isResizingHeight) {
+      window.addEventListener('mousemove', handleMouseMove);
+      window.addEventListener('mouseup', handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingWidth, isResizingHeight]);
+
   // Execution states
   const [customInput, setCustomInput] = useState('');
   const [executing, setExecuting] = useState(false);
@@ -241,10 +295,13 @@ export default function ProblemWorkspace() {
       )}
 
       {/* Main Workspace Panels */}
-      <div className="flex-1 flex flex-col md:flex-row overflow-hidden min-h-0">
+      <div className={`flex-1 flex flex-col md:flex-row overflow-hidden min-h-0 ${isResizingWidth || isResizingHeight ? 'select-none' : ''}`}>
         
         {/* Left Side: Challenge Details */}
-        <div className="flex-1 md:w-5/12 border-r border-zinc-900 flex flex-col bg-zinc-950/60 overflow-hidden">
+        <div 
+          style={isClient && typeof window !== 'undefined' && window.innerWidth >= 768 ? { width: `${leftWidth}%` } : undefined}
+          className="w-full md:w-auto border-r border-zinc-900 flex flex-col bg-zinc-950/60 overflow-hidden shrink-0"
+        >
           {/* Tab selector */}
           <div className="flex border-b border-zinc-900 bg-zinc-950 shrink-0">
             <button 
@@ -371,8 +428,21 @@ export default function ProblemWorkspace() {
           </div>
         </div>
 
+        {/* Vertical Resizer Handle */}
+        {isClient && typeof window !== 'undefined' && window.innerWidth >= 768 && (
+          <div 
+            onMouseDown={startResizeWidth}
+            className={`w-1 bg-zinc-900 hover:bg-violet-600 cursor-col-resize h-full transition-all select-none duration-150 relative z-30 flex items-center justify-center shrink-0 ${isResizingWidth ? 'bg-violet-500 w-1.5' : ''}`}
+          >
+            <div className="w-0.5 h-6 bg-zinc-800 rounded-full opacity-60" />
+          </div>
+        )}
+
         {/* Right Side: Monaco Editor & Output Console */}
-        <div className="flex-1 md:w-7/12 flex flex-col bg-zinc-950 overflow-hidden h-full">
+        <div 
+          style={isClient && typeof window !== 'undefined' && window.innerWidth >= 768 ? { width: `${100 - leftWidth}%` } : undefined}
+          className="flex-1 flex flex-col bg-zinc-950 overflow-hidden h-full"
+        >
           
           {/* Editor Header Settings */}
           <div className="px-6 py-3 border-b border-zinc-900 bg-zinc-950/80 flex items-center justify-between shrink-0">
@@ -466,8 +536,19 @@ export default function ProblemWorkspace() {
             </div>
           </div>
 
+          {/* Horizontal Resizer Handle */}
+          <div 
+            onMouseDown={startResizeHeight}
+            className={`h-1 bg-zinc-900 hover:bg-violet-600 cursor-row-resize w-full transition-all select-none duration-150 relative z-30 flex items-center justify-center shrink-0 ${isResizingHeight ? 'bg-violet-500 h-1.5' : ''}`}
+          >
+            <div className="h-0.5 w-6 bg-zinc-800 rounded-full opacity-60" />
+          </div>
+
           {/* Console / Output Drawer */}
-          <div className="h-[200px] shrink-0 bg-zinc-950 border-t border-zinc-900 flex flex-col min-h-0 text-left">
+          <div 
+            style={{ height: `${consoleHeight}px` }}
+            className="shrink-0 bg-zinc-950 border-t border-zinc-900 flex flex-col min-h-0 text-left"
+          >
             {/* Console Tabs */}
             <div className="flex border-b border-zinc-900 bg-zinc-950 shrink-0">
               <button
