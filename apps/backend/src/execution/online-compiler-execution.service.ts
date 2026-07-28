@@ -19,10 +19,10 @@ export class OnlineCompilerExecutionService extends ExecutionService {
   private getCompilerId(language: string): string {
     const lang = language.toLowerCase();
     if (lang === 'cpp' || lang === 'c++') {
-      return 'cpp-g++-15';
+      return 'g++-15';
     }
     if (lang === 'java') {
-      return 'java-25';
+      return 'openjdk-25';
     }
     if (lang === 'python') {
       return 'python-3.14';
