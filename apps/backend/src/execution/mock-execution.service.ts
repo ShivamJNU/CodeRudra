@@ -273,54 +273,115 @@ export class MockExecutionService extends ExecutionService {
   private simulateOutputByRegex(language: string, code: string, input: string): string {
     const lang = language.toLowerCase();
     const outputs: string[] = [];
+    const inputs = input.trim() ? input.trim().split(/\s+/).map(Number) : [];
 
     if (lang === 'python') {
-      const cleanCode = code.replace(/\s+/g, '');
-      const hasInput = cleanCode.includes('input(');
-      const hasSum = cleanCode.includes('x+y') || cleanCode.includes('a+b');
-      if (hasInput && hasSum && input) {
-        const nums = input.trim().split(/\s+/).map(Number);
-        if (nums.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
-          return (nums[0] + nums[1]).toString();
+      try {
+        const printMatch = code.match(/print\s*\(\s*([^)]+)\s*\)/);
+        if (printMatch) {
+          const vars: Record<string, number> = {
+            x: inputs[0] ?? 0,
+            y: inputs[1] ?? 0,
+            a: inputs[0] ?? 0,
+            b: inputs[1] ?? 0
+          };
+          const expr = printMatch[1].trim();
+          if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
+            return expr.slice(1, -1);
+          }
+          let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (match) => {
+            return vars[match] !== undefined ? String(vars[match]) : match;
+          });
+          if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+            try {
+              return String(new Function(`return (${evalStr})`)());
+            } catch (e) {}
+          }
         }
+      } catch (err) {
+        console.warn('Python simulation failed:', err);
       }
 
-      // Matches print("...") or print('...') or print(f"...")
       const regex = /print\s*\(\s*f?["']([\s\S]*?)["']\s*\)/g;
       let match;
       while ((match = regex.exec(code)) !== null) {
         outputs.push(match[1]);
       }
     } else if (lang === 'cpp') {
-      const cleanCode = code.replace(/\s+/g, '');
-      const hasCinXY = cleanCode.includes('cin>>') && (cleanCode.includes('>>x>>y') || cleanCode.includes('>>y>>x') || cleanCode.includes('>>a>>b') || cleanCode.includes('>>b>>a'));
-      const hasCoutSum = cleanCode.includes('cout<<') && (cleanCode.includes('x+y') || cleanCode.includes('y+x') || cleanCode.includes('a+b') || cleanCode.includes('b+a'));
+      try {
+        const cinMatch = code.match(/cin\s*>>\s*([a-zA-Z_]\w*)(?:\s*>>\s*([a-zA-Z_]\w*))?/);
+        const coutMatch = code.match(/cout\s*<<\s*([^;]+);/);
+        
+        if (cinMatch && coutMatch) {
+          const var1 = cinMatch[1];
+          const var2 = cinMatch[2];
+          const vars: Record<string, number> = {
+            [var1]: inputs[0] ?? 0
+          };
+          if (var2) {
+            vars[var2] = inputs[1] ?? 0;
+          }
 
-      if (hasCinXY && hasCoutSum && input) {
-        const nums = input.trim().split(/\s+/).map(Number);
-        if (nums.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
-          return (nums[0] + nums[1]).toString();
+          const parts = coutMatch[1].split('<<').map(p => p.trim());
+          const evaluatedParts = parts.map(part => {
+            if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
+              return part.slice(1, -1);
+            }
+            if (part === 'endl' || part === '"\\n"' || part === "'\\n'") {
+              return '\n';
+            }
+            let evalStr = part.replace(/\b([a-zA-Z_]\w*)\b/g, (match) => {
+              return vars[match] !== undefined ? String(vars[match]) : match;
+            });
+            if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+              try {
+                return String(new Function(`return (${evalStr})`)());
+              } catch (e) {
+                return '';
+              }
+            }
+            return '';
+          });
+          
+          const finalOut = evaluatedParts.join('').trim();
+          if (finalOut.length > 0) return finalOut;
         }
+      } catch (err) {
+        console.warn('C++ simulation failed:', err);
       }
 
-      // Matches cout << "..." or cout << '...'
       const regex = /cout\s*<<\s*["']([\s\S]*?)["']/g;
       let match;
       while ((match = regex.exec(code)) !== null) {
         outputs.push(match[1]);
       }
     } else if (lang === 'java') {
-      const cleanCode = code.replace(/\s+/g, '');
-      const hasScan = cleanCode.includes('nextInt(') || cleanCode.includes('nextLong(');
-      const hasSum = cleanCode.includes('x+y') || cleanCode.includes('a+b');
-      if (hasScan && hasSum && input) {
-        const nums = input.trim().split(/\s+/).map(Number);
-        if (nums.length >= 2 && !isNaN(nums[0]) && !isNaN(nums[1])) {
-          return (nums[0] + nums[1]).toString();
+      try {
+        const printMatch = code.match(/System\.out\.print(ln)?\s*\(\s*([^)]+)\s*\)/);
+        if (printMatch) {
+          const vars: Record<string, number> = {
+            x: inputs[0] ?? 0,
+            y: inputs[1] ?? 0,
+            a: inputs[0] ?? 0,
+            b: inputs[1] ?? 0
+          };
+          const expr = printMatch[2].trim();
+          if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
+            return expr.slice(1, -1);
+          }
+          let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (match) => {
+            return vars[match] !== undefined ? String(vars[match]) : match;
+          });
+          if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+            try {
+              return String(new Function(`return (${evalStr})`)());
+            } catch (e) {}
+          }
         }
+      } catch (err) {
+        console.warn('Java simulation failed:', err);
       }
 
-      // Matches System.out.print(...) or System.out.println(...)
       const regex = /System\.out\.print(ln)?\s*\(\s*["']([\s\S]*?)["']\s*\)/g;
       let match;
       while ((match = regex.exec(code)) !== null) {
