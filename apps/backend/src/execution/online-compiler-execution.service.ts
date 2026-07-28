@@ -39,14 +39,22 @@ export class OnlineCompilerExecutionService extends ExecutionService {
 
     if (
       exitCode === 124 || 
-      exitCode === 137 || 
-      signal === 9 || 
-      signal === '9' ||
       data.status === 'timeout' || 
       (data.error && data.error.toLowerCase().includes('timeout'))
     ) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
+    } else if (exitCode === 137 || signal === 9 || signal === '9') {
+      // exit code 137 can be either out of memory (OOM) or timeout
+      const isOOM = (data.error && (data.error.toLowerCase().includes('memory') || data.error.toLowerCase().includes('oom'))) ||
+                    (data.output && (data.output.toLowerCase().includes('memory') || data.output.toLowerCase().includes('oom')));
+      if (isOOM) {
+        status = 'MEMORY_LIMIT_EXCEEDED';
+        error = data.error || 'Memory Limit Exceeded';
+      } else {
+        status = 'TIME_LIMIT_EXCEEDED';
+        error = data.error || 'Time Limit Exceeded';
+      }
     } else if (exitCode === 139 || signal === 11 || signal === '11') {
       status = 'RUNTIME_ERROR';
       error = data.error || 'Segmentation fault (SIGSEGV)';
@@ -100,11 +108,22 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       );
       return this.parseResponse(response.data);
     } catch (err: any) {
-      if (err.response && err.response.data) {
-        try {
-          return this.parseResponse(err.response.data);
-        } catch (innerErr) {
-          // ignore parsing error and let it throw original exception
+      if (err.response) {
+        if (err.response.status === 429) {
+          return {
+            status: 'RUNTIME_ERROR',
+            error: 'Compiler capacity reached. Please wait a few seconds and try again.',
+            output: '',
+            runtime: 0.05,
+            memory: 1024,
+          };
+        }
+        if (err.response.data) {
+          try {
+            return this.parseResponse(err.response.data);
+          } catch (innerErr) {
+            // ignore parsing error and let it throw original exception
+          }
         }
       }
       throw new Error(`OnlineCompiler.io API execution failed: ${err.message}`);
