@@ -54,7 +54,14 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       let status: ExecutionResult['status'] = 'ACCEPTED';
       let error = '';
 
-      if (data.exit_code !== 0) {
+      if (
+        data.status === 'timeout' || 
+        (data.error && data.error.toLowerCase().includes('timeout')) || 
+        data.exit_code === 124
+      ) {
+        status = 'TIME_LIMIT_EXCEEDED';
+        error = data.error || 'Time Limit Exceeded';
+      } else if (data.exit_code !== 0) {
         if (data.error && data.error.toLowerCase().includes('error')) {
           status = 'RUNTIME_ERROR';
           error = data.error;
