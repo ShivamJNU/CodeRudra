@@ -275,84 +275,166 @@ export class MockExecutionService extends ExecutionService {
     const outputs: string[] = [];
     const inputs = input.trim() ? input.trim().split(/\s+/).map(Number) : [];
 
-    if (lang === 'python') {
-      try {
-        const vars: Record<string, number> = {
-          x: inputs[0] ?? 0,
-          y: inputs[1] ?? 0,
-          a: inputs[0] ?? 0,
-          b: inputs[1] ?? 0
-        };
+    const vars: Record<string, number> = {
+      x: inputs[0] ?? 0,
+      y: inputs[1] ?? 0,
+      a: inputs[0] ?? 0,
+      b: inputs[1] ?? 0
+    };
 
-        // Try loop simulator: for i in range(x): print(i)
-        const pyLoopMatch = code.match(/for\s+([a-zA-Z_]\w*)\s+in\s+range\(\s*([a-zA-Z_]\w*|\d+)\s*\)\s*:/);
-        if (pyLoopMatch) {
-          const limitStr = pyLoopMatch[2];
-          const limit = vars[limitStr] !== undefined ? vars[limitStr] : Number(limitStr);
-          if (!isNaN(limit)) {
-            const loopOut: string[] = [];
-            for (let i = 0; i < limit; i++) {
-              loopOut.push(String(i));
-            }
-            return loopOut.join('\n');
-          }
+    // Attempt C++ custom inputs
+    if (lang === 'cpp') {
+      const cinMatch = code.match(/cin\s*>>\s*([a-zA-Z_]\w*)(?:\s*>>\s*([a-zA-Z_]\w*))?/);
+      if (cinMatch) {
+        vars[cinMatch[1]] = inputs[0] ?? 0;
+        if (cinMatch[2]) {
+          vars[cinMatch[2]] = inputs[1] ?? 0;
         }
+      }
+    }
 
-        const printMatch = code.match(/print\s*\(\s*([^)]+)\s*\)/);
+    const lines = code.split('\n');
+    let idx = 0;
+    while (idx < lines.length) {
+      const line = lines[idx].trim();
+      
+      // 1. Python loop simulation
+      if (lang === 'python' && line.startsWith('for ') && line.includes(' in range(')) {
+        const match = lines[idx].match(/for\s+([a-zA-Z_]\w*)\s+in\s+range\(\s*([^)]+)\s*\)\s*:/);
+        if (match) {
+          const loopVar = match[1];
+          const rangeExpr = match[2];
+          let evalLimit = rangeExpr.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => vars[m] !== undefined ? String(vars[m]) : m);
+          let limit = 0;
+          try {
+            limit = Number(new Function(`return (${evalLimit})`)());
+          } catch (e) {
+            limit = Number(evalLimit) || 0;
+          }
+
+          // Gather indented loop body
+          const bodyLines: string[] = [];
+          idx++;
+          while (idx < lines.length && (lines[idx].startsWith(' ') || lines[idx].startsWith('\t') || lines[idx].trim() === '')) {
+            if (lines[idx].trim() !== '') {
+              bodyLines.push(lines[idx].trim());
+            }
+            idx++;
+          }
+
+          // Execute loop body
+          for (let i = 0; i < limit; i++) {
+            const loopVars = { ...vars, [loopVar]: i };
+            bodyLines.forEach(bodyLine => {
+              if (bodyLine.startsWith('print(')) {
+                const printMatch = bodyLine.match(/print\s*\(\s*([^)]+)\s*\)/);
+                if (printMatch) {
+                  const expr = printMatch[1].trim();
+                  if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
+                    outputs.push(expr.slice(1, -1));
+                  } else {
+                    let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => loopVars[m] !== undefined ? String(loopVars[m]) : m);
+                    if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+                      try {
+                        outputs.push(String(new Function(`return (${evalStr})`)()));
+                      } catch (e) {}
+                    }
+                  }
+                }
+              }
+            });
+          }
+          continue;
+        }
+      }
+
+      // 2. C++ loop simulation
+      if (lang === 'cpp' && line.startsWith('for') && line.includes('int ') && line.includes('<')) {
+        const match = lines[idx].match(/for\s*\(\s*int\s+([a-zA-Z_]\w*)\s*=\s*0\s*;\s*\1\s*<\s*([^;]+)\s*;\s*\1\s*(?:\+\+|\+=\s*1)\s*\)/);
+        if (match) {
+          const loopVar = match[1];
+          const rangeExpr = match[2];
+          let evalLimit = rangeExpr.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => vars[m] !== undefined ? String(vars[m]) : m);
+          let limit = 0;
+          try {
+            limit = Number(new Function(`return (${evalLimit})`)());
+          } catch (e) {
+            limit = Number(evalLimit) || 0;
+          }
+
+          // Gather brace loop body or next line
+          const bodyLines: string[] = [];
+          idx++;
+          let braceCount = 0;
+          if (lines[idx - 1].includes('{')) braceCount++;
+          
+          while (idx < lines.length) {
+            const currentLine = lines[idx].trim();
+            if (currentLine.includes('{')) braceCount++;
+            if (currentLine.includes('}')) braceCount--;
+            
+            const cleanLine = currentLine.replace(/[{}]/g, '').trim();
+            if (cleanLine !== '') {
+              bodyLines.push(cleanLine);
+            }
+            idx++;
+            if (braceCount <= 0) break;
+          }
+
+          // Execute loop body
+          for (let i = 0; i < limit; i++) {
+            const loopVars = { ...vars, [loopVar]: i };
+            bodyLines.forEach(bodyLine => {
+              if (bodyLine.startsWith('cout')) {
+                const coutMatch = bodyLine.match(/cout\s*<<\s*([^;]+);/);
+                if (coutMatch) {
+                  const parts = coutMatch[1].split('<<').map(p => p.trim());
+                  const evaluatedParts = parts.map(part => {
+                    if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
+                      return part.slice(1, -1);
+                    }
+                    if (part === 'endl' || part === '"\\n"' || part === "'\\n'") {
+                      return '\n';
+                    }
+                    let evalStr = part.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => loopVars[m] !== undefined ? String(loopVars[m]) : m);
+                    if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+                      try {
+                        return String(new Function(`return (${evalStr})`)());
+                      } catch (e) {
+                        return '';
+                      }
+                    }
+                    return '';
+                  });
+                  outputs.push(evaluatedParts.join('').trim());
+                }
+              }
+            });
+          }
+          continue;
+        }
+      }
+
+      // 3. Simple statements
+      if (lang === 'python' && line.startsWith('print(')) {
+        const printMatch = lines[idx].match(/print\s*\(\s*([^)]+)\s*\)/);
         if (printMatch) {
           const expr = printMatch[1].trim();
           if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
-            return expr.slice(1, -1);
-          }
-          let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (match) => {
-            return vars[match] !== undefined ? String(vars[match]) : match;
-          });
-          if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
-            try {
-              return String(new Function(`return (${evalStr})`)());
-            } catch (e) {}
-          }
-        }
-      } catch (err) {
-        console.warn('Python simulation failed:', err);
-      }
-
-      const regex = /print\s*\(\s*f?["']([\s\S]*?)["']\s*\)/g;
-      let match;
-      while ((match = regex.exec(code)) !== null) {
-        outputs.push(match[1]);
-      }
-    } else if (lang === 'cpp') {
-      try {
-        const cinMatch = code.match(/cin\s*>>\s*([a-zA-Z_]\w*)(?:\s*>>\s*([a-zA-Z_]\w*))?/);
-        const vars: Record<string, number> = {};
-        if (cinMatch) {
-          const var1 = cinMatch[1];
-          const var2 = cinMatch[2];
-          vars[var1] = inputs[0] ?? 0;
-          if (var2) {
-            vars[var2] = inputs[1] ?? 0;
-          }
-        } else {
-          vars['x'] = inputs[0] ?? 0;
-          vars['y'] = inputs[1] ?? 0;
-        }
-
-        // Try loop simulator: for(int i=0; i<x; i++)
-        const cppLoopMatch = code.match(/for\s*\(\s*int\s+([a-zA-Z_]\w*)\s*=\s*0\s*;\s*\1\s*<\s*([a-zA-Z_]\w*|\d+)\s*;\s*\1\s*(?:\+\+|\+=\s*1)\s*\)/);
-        if (cppLoopMatch) {
-          const limitStr = cppLoopMatch[2];
-          const limit = vars[limitStr] !== undefined ? vars[limitStr] : Number(limitStr);
-          if (!isNaN(limit)) {
-            const loopOut: string[] = [];
-            for (let i = 0; i < limit; i++) {
-              loopOut.push(String(i));
+            outputs.push(expr.slice(1, -1));
+          } else {
+            let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => vars[m] !== undefined ? String(vars[m]) : m);
+            if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+              try {
+                outputs.push(String(new Function(`return (${evalStr})`)()));
+              } catch (e) {}
             }
-            return loopOut.join('\n');
           }
         }
+      }
 
-        const coutMatch = code.match(/cout\s*<<\s*([^;]+);/);
+      if (lang === 'cpp' && line.startsWith('cout')) {
+        const coutMatch = lines[idx].match(/cout\s*<<\s*([^;]+);/);
         if (coutMatch) {
           const parts = coutMatch[1].split('<<').map(p => p.trim());
           const evaluatedParts = parts.map(part => {
@@ -362,9 +444,7 @@ export class MockExecutionService extends ExecutionService {
             if (part === 'endl' || part === '"\\n"' || part === "'\\n'") {
               return '\n';
             }
-            let evalStr = part.replace(/\b([a-zA-Z_]\w*)\b/g, (match) => {
-              return vars[match] !== undefined ? String(vars[match]) : match;
-            });
+            let evalStr = part.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => vars[m] !== undefined ? String(vars[m]) : m);
             if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
               try {
                 return String(new Function(`return (${evalStr})`)());
@@ -374,51 +454,28 @@ export class MockExecutionService extends ExecutionService {
             }
             return '';
           });
-          
-          const finalOut = evaluatedParts.join('').trim();
-          if (finalOut.length > 0) return finalOut;
+          outputs.push(evaluatedParts.join('').trim());
         }
-      } catch (err) {
-        console.warn('C++ simulation failed:', err);
       }
 
-      const regex = /cout\s*<<\s*["']([\s\S]*?)["']/g;
-      let match;
-      while ((match = regex.exec(code)) !== null) {
-        outputs.push(match[1]);
-      }
-    } else if (lang === 'java') {
-      try {
-        const printMatch = code.match(/System\.out\.print(ln)?\s*\(\s*([^)]+)\s*\)/);
+      if (lang === 'java' && line.includes('System.out.print')) {
+        const printMatch = lines[idx].match(/System\.out\.print(ln)?\s*\(\s*([^)]+)\s*\)/);
         if (printMatch) {
-          const vars: Record<string, number> = {
-            x: inputs[0] ?? 0,
-            y: inputs[1] ?? 0,
-            a: inputs[0] ?? 0,
-            b: inputs[1] ?? 0
-          };
           const expr = printMatch[2].trim();
           if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
-            return expr.slice(1, -1);
-          }
-          let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (match) => {
-            return vars[match] !== undefined ? String(vars[match]) : match;
-          });
-          if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
-            try {
-              return String(new Function(`return (${evalStr})`)());
-            } catch (e) {}
+            outputs.push(expr.slice(1, -1));
+          } else {
+            let evalStr = expr.replace(/\b([a-zA-Z_]\w*)\b/g, (m) => vars[m] !== undefined ? String(vars[m]) : m);
+            if (/^[0-9+\-*/%().\s]+$/.test(evalStr)) {
+              try {
+                outputs.push(String(new Function(`return (${evalStr})`)()));
+              } catch (e) {}
+            }
           }
         }
-      } catch (err) {
-        console.warn('Java simulation failed:', err);
       }
 
-      const regex = /System\.out\.print(ln)?\s*\(\s*["']([\s\S]*?)["']\s*\)/g;
-      let match;
-      while ((match = regex.exec(code)) !== null) {
-        outputs.push(match[2]);
-      }
+      idx++;
     }
 
     if (outputs.length > 0) {
