@@ -20,8 +20,8 @@ export default function Home() {
   }, [router, initializeAuth]);
 
   const handleGoogleLogin = () => {
-    // Redirect to NestJS Google OAuth redirect endpoint
-    window.location.href = 'http://localhost:5000/auth/google';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   const handleDevBypassLogin = async () => {
