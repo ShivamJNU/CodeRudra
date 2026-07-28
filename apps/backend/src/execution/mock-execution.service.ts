@@ -277,14 +277,29 @@ export class MockExecutionService extends ExecutionService {
 
     if (lang === 'python') {
       try {
+        const vars: Record<string, number> = {
+          x: inputs[0] ?? 0,
+          y: inputs[1] ?? 0,
+          a: inputs[0] ?? 0,
+          b: inputs[1] ?? 0
+        };
+
+        // Try loop simulator: for i in range(x): print(i)
+        const pyLoopMatch = code.match(/for\s+([a-zA-Z_]\w*)\s+in\s+range\(\s*([a-zA-Z_]\w*|\d+)\s*\)\s*:/);
+        if (pyLoopMatch) {
+          const limitStr = pyLoopMatch[2];
+          const limit = vars[limitStr] !== undefined ? vars[limitStr] : Number(limitStr);
+          if (!isNaN(limit)) {
+            const loopOut: string[] = [];
+            for (let i = 0; i < limit; i++) {
+              loopOut.push(String(i));
+            }
+            return loopOut.join('\n');
+          }
+        }
+
         const printMatch = code.match(/print\s*\(\s*([^)]+)\s*\)/);
         if (printMatch) {
-          const vars: Record<string, number> = {
-            x: inputs[0] ?? 0,
-            y: inputs[1] ?? 0,
-            a: inputs[0] ?? 0,
-            b: inputs[1] ?? 0
-          };
           const expr = printMatch[1].trim();
           if ((expr.startsWith('"') && expr.endsWith('"')) || (expr.startsWith("'") && expr.endsWith("'"))) {
             return expr.slice(1, -1);
@@ -310,18 +325,35 @@ export class MockExecutionService extends ExecutionService {
     } else if (lang === 'cpp') {
       try {
         const cinMatch = code.match(/cin\s*>>\s*([a-zA-Z_]\w*)(?:\s*>>\s*([a-zA-Z_]\w*))?/);
-        const coutMatch = code.match(/cout\s*<<\s*([^;]+);/);
-        
-        if (cinMatch && coutMatch) {
+        const vars: Record<string, number> = {};
+        if (cinMatch) {
           const var1 = cinMatch[1];
           const var2 = cinMatch[2];
-          const vars: Record<string, number> = {
-            [var1]: inputs[0] ?? 0
-          };
+          vars[var1] = inputs[0] ?? 0;
           if (var2) {
             vars[var2] = inputs[1] ?? 0;
           }
+        } else {
+          vars['x'] = inputs[0] ?? 0;
+          vars['y'] = inputs[1] ?? 0;
+        }
 
+        // Try loop simulator: for(int i=0; i<x; i++)
+        const cppLoopMatch = code.match(/for\s*\(\s*int\s+([a-zA-Z_]\w*)\s*=\s*0\s*;\s*\1\s*<\s*([a-zA-Z_]\w*|\d+)\s*;\s*\1\s*(?:\+\+|\+=\s*1)\s*\)/);
+        if (cppLoopMatch) {
+          const limitStr = cppLoopMatch[2];
+          const limit = vars[limitStr] !== undefined ? vars[limitStr] : Number(limitStr);
+          if (!isNaN(limit)) {
+            const loopOut: string[] = [];
+            for (let i = 0; i < limit; i++) {
+              loopOut.push(String(i));
+            }
+            return loopOut.join('\n');
+          }
+        }
+
+        const coutMatch = code.match(/cout\s*<<\s*([^;]+);/);
+        if (coutMatch) {
           const parts = coutMatch[1].split('<<').map(p => p.trim());
           const evaluatedParts = parts.map(part => {
             if ((part.startsWith('"') && part.endsWith('"')) || (part.startsWith("'") && part.endsWith("'"))) {
@@ -393,6 +425,8 @@ export class MockExecutionService extends ExecutionService {
       return outputs.join('\n');
     }
 
-    return `C++ GCC 14 Simulation Success!\n[Input STDIN]:\n${input || '(empty)'}\n\n[Console Logs]:\nCodeForge Output: hello from C++ program.`;
+    const uppercaseLang = language.toUpperCase();
+    const cleanLangName = uppercaseLang === 'CPP' ? 'C++ GCC 14' : uppercaseLang === 'PYTHON' ? 'Python 3.12' : 'Java 21 OpenJDK';
+    return `${cleanLangName} Simulation Success!\n[Input STDIN]:\n${input || '(empty)'}\n\n[Console Logs]:\nCodeForge Output: hello from ${language} program.`;
   }
 }
