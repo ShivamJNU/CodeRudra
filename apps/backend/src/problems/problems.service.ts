@@ -142,7 +142,7 @@ export class ProblemsService {
     // Check if problem exists
     await this.findOne(id);
 
-    return this.prisma.$transaction(async (tx) => {
+    return this.prisma.$transaction(async (tx: any) => {
       // Update problem metadata
       const updatedProblem = await tx.problem.update({
         where: { id },

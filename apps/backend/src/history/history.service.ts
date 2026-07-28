@@ -62,11 +62,11 @@ export class HistoryService {
     });
 
     const totalSubmissions = submissions.length;
-    const successfulSubmissions = submissions.filter((s) => s.status === 'ACCEPTED').length;
+    const successfulSubmissions = submissions.filter((s: any) => s.status === 'ACCEPTED').length;
     const successRate = totalSubmissions > 0 ? Math.round((successfulSubmissions / totalSubmissions) * 100) : 0;
 
     const languageUsage: Record<string, number> = {};
-    submissions.forEach((s) => {
+    submissions.forEach((s: any) => {
       languageUsage[s.language] = (languageUsage[s.language] || 0) + 1;
     });
 
