@@ -4,7 +4,7 @@ services:
   # Redis for BullMQ and Caching (port 6379)
   redis:
     image: redis:7.2-alpine
-    container_name: codeforge-redis
+    container_name: coderudra-redis
     ports:
       - "6379:6379"
     restart: always

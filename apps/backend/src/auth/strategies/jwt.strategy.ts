@@ -9,7 +9,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'codeforge-jwt-secret-key-1234567890',
+      secretOrKey: configService.get<string>('JWT_SECRET') || 'coderudra-jwt-secret-key-1234567890',
     });
   }
 

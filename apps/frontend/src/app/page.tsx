@@ -67,7 +67,7 @@ export default function Home() {
         </div>
 
         <a 
-          href="https://github.com/ShivamJNU/Codeforge.git" 
+          href="https://github.com/ShivamJNU/CodeRudra.git" 
           target="_blank" 
           rel="noreferrer" 
           className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white transition-colors duration-200"

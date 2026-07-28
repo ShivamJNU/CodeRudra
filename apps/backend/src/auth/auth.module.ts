@@ -13,7 +13,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'codeforge-jwt-secret-key-1234567890',
+        secret: configService.get<string>('JWT_SECRET') || 'coderudra-jwt-secret-key-1234567890',
         signOptions: { expiresIn: '7d' },
       }),
       inject: [ConfigService],
