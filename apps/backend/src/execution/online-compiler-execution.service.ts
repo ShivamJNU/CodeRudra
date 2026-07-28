@@ -34,20 +34,29 @@ export class OnlineCompilerExecutionService extends ExecutionService {
     let status: ExecutionResult['status'] = 'ACCEPTED';
     let error = '';
 
+    const exitCode = data.exit_code;
+    const signal = data.signal;
+
     if (
+      exitCode === 124 || 
+      exitCode === 137 || 
+      signal === 9 || 
+      signal === '9' ||
       data.status === 'timeout' || 
-      (data.error && data.error.toLowerCase().includes('timeout')) || 
-      data.exit_code === 124
+      (data.error && data.error.toLowerCase().includes('timeout'))
     ) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
-    } else if (data.exit_code !== 0 && data.exit_code !== undefined && data.exit_code !== null) {
+    } else if (exitCode === 139 || signal === 11 || signal === '11') {
+      status = 'RUNTIME_ERROR';
+      error = data.error || 'Segmentation fault (SIGSEGV)';
+    } else if (exitCode !== 0 && exitCode !== undefined && exitCode !== null) {
       if (data.error && data.error.toLowerCase().includes('error')) {
         status = 'RUNTIME_ERROR';
         error = data.error;
       } else {
         status = 'RUNTIME_ERROR';
-        error = data.error || `Exit Code: ${data.exit_code}`;
+        error = data.error || `Exit Code: ${exitCode}`;
       }
     }
 
