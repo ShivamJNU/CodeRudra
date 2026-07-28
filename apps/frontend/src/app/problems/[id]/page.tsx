@@ -591,7 +591,7 @@ export default function ProblemWorkspace() {
                   <textarea
                     value={customInput}
                     onChange={(e) => setCustomInput(e.target.value)}
-                    placeholder="Enter inputs here (e.g., 5\n1 2 3 4 5)"
+                    placeholder={"Enter inputs here (separate multiple inputs with space or press Enter)\n\nExample:\n4\n5"}
                     className="w-full h-full bg-transparent border-0 resize-none text-zinc-300 focus:outline-none focus:ring-0 leading-normal"
                   />
                 ) : (
