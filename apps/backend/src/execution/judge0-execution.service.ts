@@ -49,6 +49,14 @@ export class Judge0ExecutionService extends ExecutionService {
     };
     if (this.apiKey) {
       headers['X-RapidAPI-Key'] = this.apiKey;
+      if (this.apiHost.includes('rapidapi.com')) {
+        try {
+          const hostName = new URL(this.apiHost).hostname;
+          headers['X-RapidAPI-Host'] = hostName;
+        } catch (e) {
+          console.warn('Failed to parse apiHost for RapidAPI header:', e);
+        }
+      }
     }
 
     const payload = {
