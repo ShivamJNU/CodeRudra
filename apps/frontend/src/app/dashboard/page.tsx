@@ -98,7 +98,7 @@ export default function Dashboard() {
               <Code2 className="h-5 w-5 text-white" />
             </div>
             <span className="font-bold text-lg tracking-tight">
-              CodeForge <span className="text-violet-500">AI</span>
+              CodeRudra <span className="text-violet-500">AI</span>
             </span>
           </div>
 
@@ -308,7 +308,7 @@ export default function Dashboard() {
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 text-center text-xs text-zinc-600 mt-auto">
-        <p>&copy; {new Date().getFullYear()} CodeForge AI. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} CodeRudra AI. All rights reserved.</p>
       </footer>
     </div>
   );

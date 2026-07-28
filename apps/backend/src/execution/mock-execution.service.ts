@@ -484,6 +484,6 @@ export class MockExecutionService extends ExecutionService {
 
     const uppercaseLang = language.toUpperCase();
     const cleanLangName = uppercaseLang === 'CPP' ? 'C++ GCC 14' : uppercaseLang === 'PYTHON' ? 'Python 3.12' : 'Java 21 OpenJDK';
-    return `${cleanLangName} Simulation Success!\n[Input STDIN]:\n${input || '(empty)'}\n\n[Console Logs]:\nCodeForge Output: hello from ${language} program.`;
+    return `${cleanLangName} Simulation Success!\n[Input STDIN]:\n${input || '(empty)'}\n\n[Console Logs]:\nCodeRudra Output: hello from ${language} program.`;
   }
 }

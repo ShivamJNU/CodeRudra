@@ -40,9 +40,9 @@ export class AuthController {
     if (googleAccessToken === 'dev-token') {
       const user = await this.authService.validateUser(
         'dev-google-id-12345',
-        'developer@codeforge.ai',
-        'CodeForge Developer',
-        'https://api.dicebear.com/7.x/bottts/svg?seed=Codeforge',
+        'developer@coderudra.ai',
+        'CodeRudra Developer',
+        'https://api.dicebear.com/7.x/bottts/svg?seed=CodeRudra',
       );
       const tokenObj = await this.authService.generateToken(user);
       return res.status(HttpStatus.OK).json(tokenObj);

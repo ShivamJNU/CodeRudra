@@ -62,7 +62,7 @@ export default function Home() {
             <Code2 className="h-6 w-6 text-white" />
           </div>
           <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
-            CodeForge <span className="text-violet-500">AI</span>
+            CodeRudra <span className="text-violet-500">AI</span>
           </span>
         </div>
 
@@ -209,7 +209,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 text-center text-xs text-zinc-600 z-10">
-        <p>&copy; {new Date().getFullYear()} CodeForge AI. Crafted for the ultimate coding challenge.</p>
+        <p>&copy; {new Date().getFullYear()} CodeRudra AI. Crafted for the ultimate coding challenge.</p>
       </footer>
     </div>
   );
