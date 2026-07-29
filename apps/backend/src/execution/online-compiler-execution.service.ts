@@ -39,8 +39,10 @@ export class OnlineCompilerExecutionService extends ExecutionService {
 
     if (
       exitCode === 124 || 
+      exitCode === -1 || 
       data.status === 'timeout' || 
-      (data.error && data.error.toLowerCase().includes('timeout'))
+      (data.error && data.error.toLowerCase().includes('timeout')) ||
+      (data.error && data.error.includes('Internal error: code execution failed'))
     ) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
@@ -68,13 +70,13 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       }
     }
 
-    // Check if compilation failed
-    if (data.status === 'error' || (data.error && data.error.toLowerCase().includes('compile'))) {
-      if (data.error && data.error.toLowerCase().includes('timeout')) {
-        status = 'TIME_LIMIT_EXCEEDED';
-      } else {
-        status = 'COMPILATION_ERROR';
-      }
+    // Check if compilation failed (only if not already marked as TLE/OOM)
+    if (
+      status !== 'TIME_LIMIT_EXCEEDED' && 
+      status !== 'MEMORY_LIMIT_EXCEEDED' && 
+      (data.status === 'error' || (data.error && data.error.toLowerCase().includes('compile')))
+    ) {
+      status = 'COMPILATION_ERROR';
       error = data.error;
     }
 
