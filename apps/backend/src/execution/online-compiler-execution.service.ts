@@ -37,13 +37,13 @@ export class OnlineCompilerExecutionService extends ExecutionService {
     const exitCode = data.exit_code;
     const signal = data.signal;
 
-    if (
+    const isTimeout = 
       exitCode === 124 || 
-      exitCode === -1 || 
       data.status === 'timeout' || 
       (data.error && data.error.toLowerCase().includes('timeout')) ||
-      (data.error && data.error.includes('Internal error: code execution failed'))
-    ) {
+      (exitCode === -1 && data.error && data.error.includes('Internal error: code execution failed'));
+
+    if (isTimeout) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
     } else if (exitCode === 137 || signal === 9 || signal === '9') {
