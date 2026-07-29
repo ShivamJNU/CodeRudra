@@ -104,11 +104,26 @@ export class OnlineCompilerExecutionService extends ExecutionService {
 
     try {
       const response = await firstValueFrom(
-        this.httpService.post(url, payload, { headers }),
+        this.httpService.post(url, payload, { 
+          headers,
+          timeout: 35000 // 35 seconds client-side timeout limit
+        }),
       );
       return this.parseResponse(response.data);
     } catch (err: any) {
+      // 1. Handle Axios Client Connection Timeouts
+      if (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('timeout'))) {
+        return {
+          status: 'TIME_LIMIT_EXCEEDED',
+          error: 'Execution Timed Out (Connection limit exceeded)',
+          output: '',
+          runtime: 30,
+          memory: 512 * 1024,
+        };
+      }
+
       if (err.response) {
+        // 2. Handle API capacity cap
         if (err.response.status === 429) {
           return {
             status: 'RUNTIME_ERROR',
@@ -118,11 +133,33 @@ export class OnlineCompilerExecutionService extends ExecutionService {
             memory: 1024,
           };
         }
+
+        // 3. Handle Gateway Timeouts (504) or Server crashes (500/502) due to massive stdout overflow
+        if (err.response.status >= 500) {
+          return {
+            status: 'TIME_LIMIT_EXCEEDED',
+            error: 'Execution Timed Out / Output Buffer Overflow',
+            output: '',
+            runtime: 30,
+            memory: 512 * 1024,
+          };
+        }
+
         if (err.response.data) {
           try {
+            // 4. Handle HTML error pages returned instead of JSON
+            if (typeof err.response.data === 'string' && err.response.data.trim().startsWith('<')) {
+              return {
+                status: 'TIME_LIMIT_EXCEEDED',
+                error: 'Execution Timed Out (Gateway Timeout)',
+                output: '',
+                runtime: 30,
+                memory: 512 * 1024,
+              };
+            }
             return this.parseResponse(err.response.data);
           } catch (innerErr) {
-            // ignore parsing error and let it throw original exception
+            // fall through to generic error throwing
           }
         }
       }
