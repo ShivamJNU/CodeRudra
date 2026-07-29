@@ -109,8 +109,10 @@ export class OnlineCompilerExecutionService extends ExecutionService {
           timeout: 35000 // 35 seconds client-side timeout limit
         }),
       );
+      console.log('OnlineCompiler.io API Response Success Payload:', JSON.stringify(response.data, null, 2));
       return this.parseResponse(response.data);
     } catch (err: any) {
+      console.error('OnlineCompiler.io API Response Error:', err.response?.data || err.message);
       // 1. Handle Axios Client Connection Timeouts
       if (err.code === 'ECONNABORTED' || (err.message && err.message.toLowerCase().includes('timeout'))) {
         return {
