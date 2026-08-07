@@ -188,10 +188,10 @@ export class ProblemsService {
     // Seed simple 2 problems with 5 sample testcases each
     await this.create({
       title: 'Two Sum',
-      description: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`. You may assume that each input would have exactly one solution, and you may not use the same element twice.',
+      description: 'Given an array of integers $nums$ and an integer $target$, return indices of the two numbers such that they add up to $target$. You may assume that each input would have exactly one solution, and you may not use the same element twice.',
       difficulty: 'EASY',
-      constraints: '2 <= nums.length <= 10^4\n-10^9 <= nums[i] <= 10^9\n-10^9 <= target <= 10^9',
-      inputFormat: 'First line contains length N and target T.\nSecond line contains N integers.',
+      constraints: '$2 \\le nums.length \\le 10^4$\n$-10^9 \\le nums[i] \\le 10^9$\n$-10^9 \\le target \\le 10^9$',
+      inputFormat: 'First line contains length $N$ and target $T$.\nSecond line contains $N$ integers.',
       outputFormat: 'Print two space-separated indices.',
       timeLimit: 2.0,
       memoryLimit: 256.0,
@@ -207,11 +207,11 @@ export class ProblemsService {
 
     await this.create({
       title: 'Fibonacci Number',
-      description: 'The Fibonacci numbers, commonly denoted F(n) form a sequence, called the Fibonacci sequence, such that each number is the sum of the two preceding ones, starting from 0 and 1. F(0) = 0, F(1) = 1. Given n, calculate F(n).',
+      description: 'The Fibonacci numbers, commonly denoted $F(n)$, form a sequence called the Fibonacci sequence, such that each number is the sum of the two preceding ones, starting from $0$ and $1$.\n\n$$F(0) = 0, \\quad F(1) = 1$$\n\nGiven $n$, calculate $F(n)$.',
       difficulty: 'EASY',
-      constraints: '0 <= n <= 30',
-      inputFormat: 'A single integer n.',
-      outputFormat: 'Print F(n).',
+      constraints: '$0 \\le n \\le 30$',
+      inputFormat: 'A single integer $n$.',
+      outputFormat: 'Print $F(n)$.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
       testCases: [
@@ -227,10 +227,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Palindrome Number',
-      description: 'Given an integer `x`, return `true` if `x` is a palindrome, and `false` otherwise.',
+      description: 'Given an integer $x$, return `true` if $x$ is a palindrome, and `false` otherwise.',
       difficulty: 'EASY',
-      constraints: '-2^31 <= x <= 2^31 - 1',
-      inputFormat: 'A single integer x.',
+      constraints: '$-2^{31} \\le x \\le 2^{31} - 1$',
+      inputFormat: 'A single integer $x$.',
       outputFormat: 'Print true if palindrome, false otherwise.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -246,10 +246,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Reverse String',
-      description: 'Given a string `s`, return the reversed string.',
+      description: 'Given a string $s$, return the reversed string.',
       difficulty: 'EASY',
-      constraints: '1 <= s.length <= 10^3',
-      inputFormat: 'A single string s.',
+      constraints: '$1 \\le s.length \\le 10^3$',
+      inputFormat: 'A single string $s$.',
       outputFormat: 'Print the reversed string.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -265,10 +265,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Fizz Buzz',
-      description: 'Given an integer `n`, print the string representation of numbers from 1 to `n` separated by spaces. But for multiples of three print "Fizz" instead of the number and for the multiples of five print "Buzz". For numbers which are multiples of both three and five print "FizzBuzz".',
+      description: 'Given an integer $n$, print the string representation of numbers from $1$ to $n$ separated by spaces. But for multiples of $3$ print "Fizz" instead of the number and for the multiples of $5$ print "Buzz". For numbers which are multiples of both $3$ and $5$ print "FizzBuzz".',
       difficulty: 'EASY',
-      constraints: '1 <= n <= 100',
-      inputFormat: 'A single integer n.',
+      constraints: '$1 \\le n \\le 100$',
+      inputFormat: 'A single integer $n$.',
       outputFormat: 'Print space-separated strings.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -284,10 +284,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Is Even',
-      description: 'Given an integer `n`, print "even" if the number is even, and "odd" if the number is odd.',
+      description: 'Given an integer $n$, print "even" if the number is even, and "odd" if the number is odd.',
       difficulty: 'EASY',
-      constraints: '-10^9 <= n <= 10^9',
-      inputFormat: 'A single integer n.',
+      constraints: '$-10^9 \\le n \\le 10^9$',
+      inputFormat: 'A single integer $n$.',
       outputFormat: 'Print even or odd.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -305,8 +305,8 @@ export class ProblemsService {
       title: 'Find Max',
       description: 'Given an array of integers, find the maximum element.',
       difficulty: 'EASY',
-      constraints: '1 <= N <= 10^4\n-10^9 <= elements <= 10^9',
-      inputFormat: 'First line contains length N.\nSecond line contains N space-separated integers.',
+      constraints: '$1 \\le N \\le 10^4$\n$-10^9 \\le elements \\le 10^9$',
+      inputFormat: 'First line contains length $N$.\nSecond line contains $N$ space-separated integers.',
       outputFormat: 'Print the maximum integer value.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -322,10 +322,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Leap Year',
-      description: 'Given a year `y`, return `true` if it is a leap year, and `false` otherwise.',
+      description: 'Given a year $y$, return `true` if it is a leap year, and `false` otherwise.',
       difficulty: 'EASY',
-      constraints: '1 <= y <= 10^5',
-      inputFormat: 'A single integer y.',
+      constraints: '$1 \\le y \\le 10^5$',
+      inputFormat: 'A single integer $y$.',
       outputFormat: 'Print true or false.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -341,10 +341,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Valid Parentheses Simple',
-      description: 'Given a string `s` containing just the characters "(", ")", "[", "]", "{" and "}", determine if the input string is valid.',
+      description: 'Given a string $s$ containing just the characters "(", ")", "[", "]", "{" and "}", determine if the input string is valid.',
       difficulty: 'EASY',
-      constraints: '1 <= s.length <= 10^4',
-      inputFormat: 'A single string s.',
+      constraints: '$1 \\le s.length \\le 10^4$',
+      inputFormat: 'A single string $s$.',
       outputFormat: 'Print true if valid, false otherwise.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
@@ -360,10 +360,10 @@ export class ProblemsService {
 
     await this.create({
       title: 'Factorial',
-      description: 'Given an integer `n`, calculate its factorial (n!).',
+      description: 'Given an integer $n$, calculate its factorial ($n!$).',
       difficulty: 'EASY',
-      constraints: '0 <= n <= 12',
-      inputFormat: 'A single integer n.',
+      constraints: '$0 \\le n \\le 12$',
+      inputFormat: 'A single integer $n$.',
       outputFormat: 'Print the factorial value.',
       timeLimit: 1.0,
       memoryLimit: 128.0,
