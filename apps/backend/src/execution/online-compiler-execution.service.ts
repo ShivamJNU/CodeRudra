@@ -30,7 +30,7 @@ export class OnlineCompilerExecutionService extends ExecutionService {
     return 'python-3.14';
   }
 
-  private parseResponse(data: any): ExecutionResult {
+  private parseResponse(data: any, language: string): ExecutionResult {
     let status: ExecutionResult['status'] = 'ACCEPTED';
     let error = '';
 
@@ -61,8 +61,14 @@ export class OnlineCompilerExecutionService extends ExecutionService {
        )));
 
     if (isInternalError) {
-      status = 'RUNTIME_ERROR';
-      error = 'Error';
+      const lang = language.toLowerCase();
+      if (lang === 'java' || lang === 'python') {
+        status = 'COMPILATION_ERROR';
+        error = 'Compilation/Syntax Error: Please check your code syntax and structure.';
+      } else {
+        status = 'RUNTIME_ERROR';
+        error = 'Error';
+      }
     } else if (isTimeout) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
@@ -129,7 +135,7 @@ export class OnlineCompilerExecutionService extends ExecutionService {
         }),
       );
       console.log('OnlineCompiler.io API Response Success Payload:', JSON.stringify(response.data, null, 2));
-      return this.parseResponse(response.data);
+      return this.parseResponse(response.data, request.language);
     } catch (err: any) {
       console.error('OnlineCompiler.io API Response Error:', err.response?.data || err.message);
       // 1. Handle Axios Client Connection Timeouts
@@ -178,7 +184,7 @@ export class OnlineCompilerExecutionService extends ExecutionService {
                 memory: 512 * 1024,
               };
             }
-            return this.parseResponse(err.response.data);
+            return this.parseResponse(err.response.data, request.language);
           } catch (innerErr) {
             // fall through to generic error throwing
           }
