@@ -180,10 +180,12 @@ export class ProblemsService {
   }
 
   async seedDemoProblems() {
-    const count = await this.prisma.problem.count();
-    if (count > 0) return;
+    // Clear existing problems and related submissions to ensure a fresh, updated seed
+    await this.prisma.testCase.deleteMany({});
+    await this.prisma.submission.deleteMany({});
+    await this.prisma.problem.deleteMany({});
 
-    // Seed simple 2 problems
+    // Seed simple 2 problems with 5 sample testcases each
     await this.create({
       title: 'Two Sum',
       description: 'Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`. You may assume that each input would have exactly one solution, and you may not use the same element twice.',
@@ -196,7 +198,10 @@ export class ProblemsService {
       testCases: [
         { input: '4 9\n2 7 11 15', output: '0 1', isSample: true },
         { input: '3 6\n3 2 4', output: '1 2', isSample: true },
-        { input: '2 6\n3 3', output: '0 1', isSample: false },
+        { input: '2 6\n3 3', output: '0 1', isSample: true },
+        { input: '5 10\n1 2 3 4 6', output: '3 4', isSample: true },
+        { input: '6 15\n1 3 5 7 8 12', output: '1 5', isSample: true },
+        { input: '5 20\n10 15 2 8 12', output: '3 4', isSample: false },
       ],
     });
 
@@ -210,9 +215,12 @@ export class ProblemsService {
       timeLimit: 1.0,
       memoryLimit: 128.0,
       testCases: [
+        { input: '0', output: '0', isSample: true },
+        { input: '1', output: '1', isSample: true },
         { input: '2', output: '1', isSample: true },
         { input: '3', output: '2', isSample: true },
-        { input: '4', output: '3', isSample: false },
+        { input: '4', output: '3', isSample: true },
+        { input: '5', output: '5', isSample: false },
         { input: '9', output: '34', isSample: false },
       ],
     });
