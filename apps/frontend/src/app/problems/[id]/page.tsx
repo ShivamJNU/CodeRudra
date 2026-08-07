@@ -2,14 +2,14 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAuthStore, useEditorStore } from '@/lib/store';
+import { useAuthStore, useEditorStore, templates } from '@/lib/store';
 import api from '@/lib/api';
 import Editor from '@monaco-editor/react';
 import Latex from '@/components/Latex';
 import { 
   ArrowLeft, Terminal, Cpu, Play, CheckCircle2, 
   Save, AlertTriangle, FileUp, Sparkles, Code2, 
-  HelpCircle, History, Settings 
+  HelpCircle, History, Settings, RotateCcw 
 } from 'lucide-react';
 
 export default function ProblemWorkspace() {
@@ -127,6 +127,17 @@ export default function ProblemWorkspace() {
     setLanguage(newLang);
     if (typeof window !== 'undefined' && id) {
       localStorage.setItem(`coderudra-lang-${id}`, newLang);
+    }
+  };
+
+  const handleResetCode = () => {
+    const confirmReset = window.confirm("Are you sure you want to reset your code to the default template? Your current edits will be lost.");
+    if (!confirmReset) return;
+
+    const defaultTemplate = (templates as any)[language] || '';
+    setCode(defaultTemplate);
+    if (typeof window !== 'undefined' && id && language) {
+      localStorage.setItem(`coderudra-code-${id}-${language}`, defaultTemplate);
     }
   };
 
@@ -500,6 +511,15 @@ export default function ProblemWorkspace() {
                   <option value="python" className="bg-zinc-950 text-white">Python (Python 3.12)</option>
                 </select>
               </div>
+
+              <button
+                onClick={handleResetCode}
+                title="Reset code to default template"
+                className="flex items-center gap-1.5 text-xs text-zinc-400 font-semibold bg-zinc-900/50 hover:bg-zinc-900 hover:text-white px-3 py-1.5 rounded-lg border border-zinc-800 transition-all duration-150 active:scale-95 cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5 text-zinc-500 group-hover:text-white" />
+                <span>Reset Code</span>
+              </button>
             </div>
 
             <div className="text-xs text-zinc-500 font-mono">
