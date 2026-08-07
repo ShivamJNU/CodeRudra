@@ -308,7 +308,7 @@ export default function Dashboard() {
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 text-center text-xs text-zinc-600 mt-auto">
-        <p>&copy; {new Date().getFullYear()} CodeRudra AI. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} CodeRudra. All rights reserved.</p>
       </footer>
     </div>
   );

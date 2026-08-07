@@ -209,7 +209,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 text-center text-xs text-zinc-600 z-10">
-        <p>&copy; {new Date().getFullYear()} CodeRudra AI. Crafted for the ultimate coding challenge.</p>
+        <p>&copy; {new Date().getFullYear()} CodeRudra. Crafted for the ultimate coding challenge.</p>
       </footer>
     </div>
   );

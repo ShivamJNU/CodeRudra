@@ -22,6 +22,6 @@ async function bootstrap() {
 
   const port = process.env.PORT ?? 5000;
   await app.listen(port);
-  console.log(`CodeRudra AI Backend is running on: http://localhost:${port}`);
+  console.log(`CodeRudra Backend is running on: http://localhost:${port}`);
 }
 bootstrap();

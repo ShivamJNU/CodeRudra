@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeRudra AI | The Ultimate Coding Workspace",
-  description: "An AI-powered coding workspace supporting real-time cloud compilation in C++, Python, and Java.",
+  title: "CodeRudra | The Ultimate Coding Workspace",
+  description: "A coding workspace supporting real-time cloud compilation in C++ and Python.",
 };
 
 export default function RootLayout({
