@@ -37,14 +37,22 @@ export class OnlineCompilerExecutionService extends ExecutionService {
     const exitCode = data.exit_code;
     const signal = data.signal;
 
+    const hasTimeoutKeyword = !!(data.error && (
+      data.error.toLowerCase().includes('timeout') ||
+      data.error.toLowerCase().includes('time limit') ||
+      data.error.toLowerCase().includes('timed out')
+    ));
+
     const isInternalError = 
-      (data.error && data.error.includes('Internal error: code execution failed')) ||
-      (exitCode === -1 && data.error && data.error.includes('Internal error: code execution failed'));
+      !hasTimeoutKeyword && !!(
+        (data.error && data.error.includes('Internal error: code execution failed')) ||
+        (exitCode === -1 && data.error && data.error.includes('Internal error: code execution failed'))
+      );
 
     const isTimeout = 
       exitCode === 124 || 
       data.status === 'timeout' || 
-      (data.error && data.error.toLowerCase().includes('timeout'));
+      hasTimeoutKeyword;
 
     const isCompileError = 
       !isInternalError &&
