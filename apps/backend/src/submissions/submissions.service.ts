@@ -124,7 +124,8 @@ export class SubmissionsService {
     let firstErrorMsg = '';
     let sampleOutput = '';
 
-    for (const tc of testCases) {
+    for (let idx = 0; idx < testCases.length; idx++) {
+      const tc = testCases[idx];
       const runResult = await this.executionService.execute({
         sourceCode: data.sourceCode,
         language: data.language,
@@ -139,7 +140,7 @@ export class SubmissionsService {
       // Check time limit
       if (maxRuntime > problem.timeLimit) {
         finalStatus = 'TIME_LIMIT_EXCEEDED';
-        firstErrorMsg = `Time Limit Exceeded (Limit: ${problem.timeLimit}s)`;
+        firstErrorMsg = `Time Limit Exceeded (Limit: ${problem.timeLimit}s) on Testcase ${idx + 1}`;
         break;
       }
 
@@ -147,13 +148,13 @@ export class SubmissionsService {
       const memoryInMB = maxMemory / 1024;
       if (memoryInMB > problem.memoryLimit) {
         finalStatus = 'MEMORY_LIMIT_EXCEEDED';
-        firstErrorMsg = `Memory Limit Exceeded (Limit: ${problem.memoryLimit}MB)`;
+        firstErrorMsg = `Memory Limit Exceeded (Limit: ${problem.memoryLimit}MB) on Testcase ${idx + 1}`;
         break;
       }
 
       if (runResult.status !== 'ACCEPTED') {
         finalStatus = runResult.status;
-        firstErrorMsg = runResult.error || `Failed testcase. Status: ${runResult.status}`;
+        firstErrorMsg = runResult.error || `Failed testcase ${idx + 1}. Status: ${runResult.status}`;
         sampleOutput = runResult.output || '';
         break;
       }
@@ -164,7 +165,7 @@ export class SubmissionsService {
 
       if (cleanActual !== cleanExpected) {
         finalStatus = 'WRONG_ANSWER';
-        firstErrorMsg = `Output mismatch.\nExpected:\n${cleanExpected}\n\nGot:\n${cleanActual}`;
+        firstErrorMsg = `Wrong Answer on Testcase ${idx + 1}\n\nFor this input:\n${tc.input || '(empty)'}\n\nExpected output is:\n${cleanExpected}\n\nbut got:\n${cleanActual}`;
         sampleOutput = runResult.output || '';
         break;
       }
