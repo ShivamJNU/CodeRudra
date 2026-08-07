@@ -47,16 +47,15 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
     } else if (exitCode === 137 || signal === 9 || signal === '9') {
-      // exit code 137 can be either out of memory (OOM) or timeout
+      // exit code 137 can be either out of memory (OOM) or timeout (both are resource limits)
       const isOOM = (data.error && (data.error.toLowerCase().includes('memory') || data.error.toLowerCase().includes('oom'))) ||
                     (data.output && (data.output.toLowerCase().includes('memory') || data.output.toLowerCase().includes('oom')));
       if (isOOM) {
         status = 'MEMORY_LIMIT_EXCEEDED';
-        error = data.error || 'Memory Limit Exceeded';
       } else {
         status = 'TIME_LIMIT_EXCEEDED';
-        error = data.error || 'Time Limit Exceeded';
       }
+      error = 'Resource Limit Exceeded';
     } else if (exitCode === 139 || signal === 11 || signal === '11') {
       status = 'RUNTIME_ERROR';
       error = data.error || 'Segmentation fault (SIGSEGV)';
