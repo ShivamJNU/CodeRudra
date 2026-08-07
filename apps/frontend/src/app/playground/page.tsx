@@ -267,58 +267,55 @@ export default function Playground() {
             ) : (
               <div className="flex-1 flex flex-col gap-4">
                 
-                {/* Status Bar */}
-                {runResult && (
-                  <div className={`p-4 rounded-xl border flex items-center justify-between text-xs font-bold leading-none uppercase ${
-                    runResult.status === 'RUNNING'
-                      ? 'bg-zinc-900/40 border-zinc-900 text-zinc-400'
-                      : runResult.status === 'ACCEPTED' || runResult.status === 'RUN_SUCCESSFUL' || runResult.status === 'SUCCESS' || (!runResult.error && runResult.status !== 'COMPILATION_ERROR' && runResult.status !== 'RUNTIME_ERROR' && runResult.status !== 'TIME_LIMIT_EXCEEDED')
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                      : 'bg-red-500/10 border-red-500/20 text-red-400'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      {runResult.status === 'RUNNING' ? (
-                        <div className="h-4 w-4 rounded-full border-2 border-zinc-600 border-t-transparent animate-spin" />
-                      ) : runResult.status === 'ACCEPTED' || runResult.status === 'RUN_SUCCESSFUL' || runResult.status === 'SUCCESS' || (!runResult.error && runResult.status !== 'COMPILATION_ERROR' && runResult.status !== 'RUNTIME_ERROR' && runResult.status !== 'TIME_LIMIT_EXCEEDED') ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 text-red-400" />
+                {runResult && runResult.status === 'RUNNING' ? (
+                  <div className="flex-1 flex flex-col items-center justify-center text-center py-12 text-zinc-400 gap-3">
+                    <div className="h-8 w-8 rounded-full border-4 border-violet-500 border-t-transparent animate-spin" />
+                    <span className="text-sm font-semibold tracking-wider animate-pulse">Compiling & Running...</span>
+                  </div>
+                ) : runResult ? (
+                  <div className="flex flex-col gap-4 flex-1">
+                    {/* Status Bar */}
+                    <div className={`p-4 rounded-xl border flex items-center justify-between text-xs font-bold leading-none uppercase ${
+                      runResult.status === 'ACCEPTED' || runResult.status === 'RUN_SUCCESSFUL' || runResult.status === 'SUCCESS' || (!runResult.error && runResult.status !== 'COMPILATION_ERROR' && runResult.status !== 'RUNTIME_ERROR' && runResult.status !== 'TIME_LIMIT_EXCEEDED')
+                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+                        : 'bg-red-500/10 border-red-500/20 text-red-400'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        {runResult.status === 'ACCEPTED' || runResult.status === 'RUN_SUCCESSFUL' || runResult.status === 'SUCCESS' || (!runResult.error && runResult.status !== 'COMPILATION_ERROR' && runResult.status !== 'RUNTIME_ERROR' && runResult.status !== 'TIME_LIMIT_EXCEEDED') ? (
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4 text-red-400" />
+                        )}
+                        <span>
+                          {runResult.status === 'ACCEPTED' || runResult.status === 'RUN_SUCCESSFUL' || runResult.status === 'SUCCESS' || (!runResult.error && runResult.status !== 'COMPILATION_ERROR' && runResult.status !== 'RUNTIME_ERROR' && runResult.status !== 'TIME_LIMIT_EXCEEDED')
+                            ? 'Run Successful'
+                            : 'Error'}
+                        </span>
+                      </div>
+
+                      {runResult.runtime !== undefined && runResult.runtime !== null && (
+                        <span className="text-[10px] text-zinc-500 font-mono font-normal">
+                          Time: {Number(runResult.runtime).toFixed(3)}s
+                        </span>
                       )}
-                      <span>
-                        {runResult.status === 'RUNNING'
-                          ? 'Executing Code...'
-                          : runResult.status === 'ACCEPTED' || runResult.status === 'RUN_SUCCESSFUL' || runResult.status === 'SUCCESS' || (!runResult.error && runResult.status !== 'COMPILATION_ERROR' && runResult.status !== 'RUNTIME_ERROR' && runResult.status !== 'TIME_LIMIT_EXCEEDED')
-                          ? 'Run Successful'
-                          : 'Error'}
-                      </span>
                     </div>
 
-                    {runResult.runtime !== undefined && runResult.runtime !== null && (
-                      <span className="text-[10px] text-zinc-500 font-mono font-normal">
-                        Time: {Number(runResult.runtime).toFixed(3)}s
-                      </span>
-                    )}
+                    {/* Stdout Output Console */}
+                    <div className="flex flex-col gap-2 flex-1">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Compiler Output (stdout / stderr)</span>
+                      
+                      {runResult.error || runResult.status === 'COMPILATION_ERROR' || runResult.status === 'RUNTIME_ERROR' || runResult.status === 'TIME_LIMIT_EXCEEDED' ? (
+                        <pre className="p-4 bg-red-950/10 border border-red-950/20 text-red-400 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto select-text">
+                          {runResult.error || runResult.output || 'Execution failed or timed out.'}
+                        </pre>
+                      ) : (
+                        <pre className="p-4 bg-zinc-900/60 border border-zinc-900 text-zinc-300 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto flex-1 select-text">
+                          {runResult.output || 'Code ran successfully with no output.'}
+                        </pre>
+                      )}
+                    </div>
                   </div>
-                )}
-
-                {/* Stdout Output Console */}
-                {runResult && (
-                  <div className="flex flex-col gap-2 flex-1">
-                    <span className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Compiler Output (stdout / stderr)</span>
-                    
-                    {runResult.error || runResult.status === 'COMPILATION_ERROR' || runResult.status === 'RUNTIME_ERROR' || runResult.status === 'TIME_LIMIT_EXCEEDED' ? (
-                      <pre className="p-4 bg-red-950/10 border border-red-950/20 text-red-400 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto">
-                        {runResult.error || runResult.output || 'Execution failed or timed out.'}
-                      </pre>
-                    ) : (
-                      <pre className="p-4 bg-zinc-900/60 border border-zinc-900 text-zinc-300 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed overflow-x-auto flex-1">
-                        {runResult.output || 'Code ran successfully with no output.'}
-                      </pre>
-                    )}
-                  </div>
-                )}
-
-                {!runResult && (
+                ) : (
                   <div className="flex-1 flex flex-col items-center justify-center text-center py-12 text-zinc-600 text-sm">
                     <Terminal className="h-8 w-8 mx-auto text-zinc-800 mb-2" />
                     <span>Run your code to view the output console.</span>
