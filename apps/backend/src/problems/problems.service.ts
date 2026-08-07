@@ -224,5 +224,157 @@ export class ProblemsService {
         { input: '9', output: '34', isSample: false },
       ],
     });
+
+    await this.create({
+      title: 'Palindrome Number',
+      description: 'Given an integer `x`, return `true` if `x` is a palindrome, and `false` otherwise.',
+      difficulty: 'EASY',
+      constraints: '-2^31 <= x <= 2^31 - 1',
+      inputFormat: 'A single integer x.',
+      outputFormat: 'Print true if palindrome, false otherwise.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '121', output: 'true', isSample: true },
+        { input: '-121', output: 'false', isSample: true },
+        { input: '10', output: 'false', isSample: true },
+        { input: '1221', output: 'true', isSample: true },
+        { input: '0', output: 'true', isSample: true },
+        { input: '12321', output: 'true', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Reverse String',
+      description: 'Given a string `s`, return the reversed string.',
+      difficulty: 'EASY',
+      constraints: '1 <= s.length <= 10^3',
+      inputFormat: 'A single string s.',
+      outputFormat: 'Print the reversed string.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: 'hello', output: 'olleh', isSample: true },
+        { input: 'Hannah', output: 'hannaH', isSample: true },
+        { input: 'a', output: 'a', isSample: true },
+        { input: 'CodeRudra', output: 'arduRedoC', isSample: true },
+        { input: 'racecar', output: 'racecar', isSample: true },
+        { input: 'workspace', output: 'ecapskrow', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Fizz Buzz',
+      description: 'Given an integer `n`, print the string representation of numbers from 1 to `n` separated by spaces. But for multiples of three print "Fizz" instead of the number and for the multiples of five print "Buzz". For numbers which are multiples of both three and five print "FizzBuzz".',
+      difficulty: 'EASY',
+      constraints: '1 <= n <= 100',
+      inputFormat: 'A single integer n.',
+      outputFormat: 'Print space-separated strings.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '3', output: '1 2 Fizz', isSample: true },
+        { input: '5', output: '1 2 Fizz 4 Buzz', isSample: true },
+        { input: '15', output: '1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz 11 Fizz 13 14 FizzBuzz', isSample: true },
+        { input: '1', output: '1', isSample: true },
+        { input: '6', output: '1 2 Fizz 4 Buzz Fizz', isSample: true },
+        { input: '10', output: '1 2 Fizz 4 Buzz Fizz 7 8 Fizz Buzz', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Is Even',
+      description: 'Given an integer `n`, print "even" if the number is even, and "odd" if the number is odd.',
+      difficulty: 'EASY',
+      constraints: '-10^9 <= n <= 10^9',
+      inputFormat: 'A single integer n.',
+      outputFormat: 'Print even or odd.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '2', output: 'even', isSample: true },
+        { input: '3', output: 'odd', isSample: true },
+        { input: '0', output: 'even', isSample: true },
+        { input: '-5', output: 'odd', isSample: true },
+        { input: '1024', output: 'even', isSample: true },
+        { input: '99', output: 'odd', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Find Max',
+      description: 'Given an array of integers, find the maximum element.',
+      difficulty: 'EASY',
+      constraints: '1 <= N <= 10^4\n-10^9 <= elements <= 10^9',
+      inputFormat: 'First line contains length N.\nSecond line contains N space-separated integers.',
+      outputFormat: 'Print the maximum integer value.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '5\n1 5 3 9 2', output: '9', isSample: true },
+        { input: '3\n-1 -5 -3', output: '-1', isSample: true },
+        { input: '1\n100', output: '100', isSample: true },
+        { input: '4\n10 20 20 5', output: '20', isSample: true },
+        { input: '6\n0 0 0 0 0 0', output: '0', isSample: true },
+        { input: '2\n-100 50', output: '50', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Leap Year',
+      description: 'Given a year `y`, return `true` if it is a leap year, and `false` otherwise.',
+      difficulty: 'EASY',
+      constraints: '1 <= y <= 10^5',
+      inputFormat: 'A single integer y.',
+      outputFormat: 'Print true or false.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '2000', output: 'true', isSample: true },
+        { input: '1900', output: 'false', isSample: true },
+        { input: '2024', output: 'true', isSample: true },
+        { input: '2023', output: 'false', isSample: true },
+        { input: '1600', output: 'true', isSample: true },
+        { input: '2100', output: 'false', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Valid Parentheses Simple',
+      description: 'Given a string `s` containing just the characters "(", ")", "[", "]", "{" and "}", determine if the input string is valid.',
+      difficulty: 'EASY',
+      constraints: '1 <= s.length <= 10^4',
+      inputFormat: 'A single string s.',
+      outputFormat: 'Print true if valid, false otherwise.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '()', output: 'true', isSample: true },
+        { input: '()[]{}', output: 'true', isSample: true },
+        { input: '(]', output: 'false', isSample: true },
+        { input: '([])', output: 'true', isSample: true },
+        { input: '{[}', output: 'false', isSample: true },
+        { input: '({[]})', output: 'true', isSample: false },
+      ],
+    });
+
+    await this.create({
+      title: 'Factorial',
+      description: 'Given an integer `n`, calculate its factorial (n!).',
+      difficulty: 'EASY',
+      constraints: '0 <= n <= 12',
+      inputFormat: 'A single integer n.',
+      outputFormat: 'Print the factorial value.',
+      timeLimit: 1.0,
+      memoryLimit: 128.0,
+      testCases: [
+        { input: '0', output: '1', isSample: true },
+        { input: '1', output: '1', isSample: true },
+        { input: '5', output: '120', isSample: true },
+        { input: '10', output: '3628800', isSample: true },
+        { input: '4', output: '24', isSample: true },
+        { input: '6', output: '720', isSample: false },
+      ],
+    });
   }
 }
