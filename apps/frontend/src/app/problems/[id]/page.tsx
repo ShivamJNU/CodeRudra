@@ -94,6 +94,24 @@ export default function ProblemWorkspace() {
   // File Upload reference
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load saved code from localStorage on mount, language change, or problem ID change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && id && language) {
+      const savedCode = localStorage.getItem(`coderudra-code-${id}-${language}`);
+      if (savedCode) {
+        setCode(savedCode);
+      }
+    }
+  }, [id, language, setCode]);
+
+  const handleCodeChange = (newValue: string | undefined) => {
+    const val = newValue || '';
+    setCode(val);
+    if (typeof window !== 'undefined' && id && language) {
+      localStorage.setItem(`coderudra-code-${id}-${language}`, val);
+    }
+  };
+
   useEffect(() => {
     initializeAuth();
     if (!useAuthStore.getState().isAuthenticated) {
@@ -479,7 +497,7 @@ export default function ProblemWorkspace() {
               language={language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'python'}
               theme="vs-dark"
               value={code}
-              onChange={(val) => setCode(val || '')}
+              onChange={handleCodeChange}
               options={{
                 fontSize: 14,
                 minimap: { enabled: false },
