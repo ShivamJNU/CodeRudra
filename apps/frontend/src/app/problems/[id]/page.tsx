@@ -467,7 +467,7 @@ export default function ProblemWorkspace() {
                         <span className={`font-bold uppercase tracking-wider ${
                           sub.status === 'ACCEPTED' ? 'text-emerald-400' : 'text-red-400'
                         }`}>
-                          {sub.status}
+                          {sub.language === 'python' && (sub.status === 'COMPILATION_ERROR' || sub.status === 'RUNTIME_ERROR') ? 'ERROR' : sub.status}
                         </span>
                         <span className="text-zinc-500 font-mono">
                           Runtime: {sub.runtime}s &bull; Memory: {sub.memory ? Math.round(sub.memory) : 0} KB
@@ -677,7 +677,9 @@ export default function ProblemWorkspace() {
                                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                                 : 'bg-red-500/10 border-red-500/20 text-red-400'
                             }`}>
-                              {runResult.status === 'ACCEPTED' ? 'Run Successful' : runResult.status}
+                              {runResult.status === 'ACCEPTED' 
+                                ? 'Run Successful' 
+                                : (language === 'python' && (runResult.status === 'COMPILATION_ERROR' || runResult.status === 'RUNTIME_ERROR') ? 'ERROR' : runResult.status)}
                             </span>
                             <span className="text-zinc-500">|</span>
                             <span className="text-zinc-400">Runtime: {runResult.runtime ?? 0}s</span>
