@@ -80,7 +80,7 @@ export default function Home() {
         <div className="flex-1 flex flex-col items-start text-left gap-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-semibold tracking-wide">
             <Sparkles className="h-3 w-3 animate-pulse" />
-            <span>Interactive Judge & Sandbox Platform</span>
+            <span>LeetCode-Style DSA & Problem Solving Platform</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
@@ -89,7 +89,7 @@ export default function Home() {
           </h1>
 
           <p className="text-zinc-400 text-lg max-w-lg leading-relaxed">
-            Write, execute, and evaluate programs in C++ and Python. A premium, sandboxed code execution playground designed for engineers.
+            Write, execute, and evaluate programs in C++ and Python. A premium LeetCode-style sandboxed judge environment built for practicing Data Structures, Algorithms, and Competitive Programming.
           </p>
 
           {error && (
