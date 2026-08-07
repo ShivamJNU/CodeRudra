@@ -79,9 +79,14 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       error = data.error;
     }
 
+    let outputStr = data.output || '';
+    if (outputStr.length > 950) {
+      outputStr = outputStr.trim() + '\n\n... [Output is truncated as character limit reached in output]';
+    }
+
     return {
       status,
-      output: data.output || '',
+      output: outputStr,
       runtime: data.time ? parseFloat(data.time) : 0.05,
       memory: data.memory ? parseFloat(data.memory) : 1024,
       error: error || undefined,
