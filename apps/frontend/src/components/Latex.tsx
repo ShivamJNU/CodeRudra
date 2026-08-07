@@ -7,14 +7,21 @@ export default function Latex({ text, className = '' }: { text: string; classNam
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Check if KaTeX auto-render is already loaded globally
-    if ((window as any).renderMathInElement) {
-      setKatexLoaded(true);
-      return;
-    }
+    const checkKatex = () => {
+      if ((window as any).renderMathInElement) {
+        setKatexLoaded(true);
+        return true;
+      }
+      return false;
+    };
 
-    // Avoid double injecting link
-    if (!document.getElementById('katex-css')) {
+    if (checkKatex()) return;
+
+    // Check if script tags are already in DOM
+    const hasCss = !!document.getElementById('katex-css');
+    const hasJs = !!document.getElementById('katex-js');
+
+    if (!hasCss) {
       const link = document.createElement('link');
       link.id = 'katex-css';
       link.rel = 'stylesheet';
@@ -22,8 +29,7 @@ export default function Latex({ text, className = '' }: { text: string; classNam
       document.head.appendChild(link);
     }
 
-    // Avoid double injecting script
-    if (!document.getElementById('katex-js')) {
+    if (!hasJs) {
       const script = document.createElement('script');
       script.id = 'katex-js';
       script.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
@@ -39,15 +45,14 @@ export default function Latex({ text, className = '' }: { text: string; classNam
         document.head.appendChild(autoRenderScript);
       };
       document.head.appendChild(script);
-    } else if ((window as any).katex) {
-      // Script is already in DOM, check auto render loading
-      const checkInterval = setInterval(() => {
-        if ((window as any).renderMathInElement) {
-          setKatexLoaded(true);
-          clearInterval(checkInterval);
+    } else {
+      // Script tags are present but KaTeX isn't loaded on window yet, poll for it
+      const interval = setInterval(() => {
+        if (checkKatex()) {
+          clearInterval(interval);
         }
       }, 100);
-      return () => clearInterval(checkInterval);
+      return () => clearInterval(interval);
     }
   }, []);
 
