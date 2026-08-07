@@ -496,14 +496,13 @@ export default function ProblemWorkspace() {
                   className="bg-transparent text-white focus:outline-none capitalize font-bold cursor-pointer"
                 >
                   <option value="cpp" className="bg-zinc-950 text-white">C++ (GCC 14)</option>
-                  <option value="java" className="bg-zinc-950 text-white">Java (OpenJDK 21)</option>
                   <option value="python" className="bg-zinc-950 text-white">Python (Python 3.12)</option>
                 </select>
               </div>
             </div>
 
             <div className="text-xs text-zinc-500 font-mono">
-              Main.{language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'py'}
+              Main.{language === 'cpp' ? 'cpp' : 'py'}
             </div>
           </div>
 
@@ -511,7 +510,7 @@ export default function ProblemWorkspace() {
           <div className={`flex-1 min-h-[100px] bg-zinc-950 ${isResizingWidth || isResizingHeight ? 'pointer-events-none' : ''}`}>
             <Editor
               height="100%"
-              language={language === 'cpp' ? 'cpp' : language === 'java' ? 'java' : 'python'}
+              language={language === 'cpp' ? 'cpp' : 'python'}
               theme="vs-dark"
               value={code}
               onChange={handleCodeChange}
