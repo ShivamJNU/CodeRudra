@@ -46,12 +46,29 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       data.status === 'timeout' || 
       (data.error && data.error.toLowerCase().includes('timeout'));
 
+    const isCompileError = 
+      !isInternalError &&
+      !isTimeout &&
+      (data.status === 'error' || 
+       (data.error && (
+         data.error.toLowerCase().includes('compile') ||
+         data.error.includes('SyntaxError') ||
+         data.error.includes('IndentationError') ||
+         data.error.includes('TabError') ||
+         data.error.includes('.java:') ||
+         data.error.includes('Main.java') ||
+         data.error.toLowerCase().includes('error: ')
+       )));
+
     if (isInternalError) {
       status = 'RUNTIME_ERROR';
       error = 'Error';
     } else if (isTimeout) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
+    } else if (isCompileError) {
+      status = 'COMPILATION_ERROR';
+      error = data.error || 'Compilation Error';
     } else if (exitCode === 137 || signal === 9 || signal === '9') {
       // exit code 137 can be either out of memory (OOM) or timeout (both are resource limits)
       const isOOM = (data.error && (data.error.toLowerCase().includes('memory') || data.error.toLowerCase().includes('oom'))) ||
@@ -73,17 +90,6 @@ export class OnlineCompilerExecutionService extends ExecutionService {
         status = 'RUNTIME_ERROR';
         error = data.error || `Exit Code: ${exitCode}`;
       }
-    }
-
-    // Check if compilation failed (only if not already marked as TLE/OOM/RUNTIME_ERROR)
-    if (
-      status !== 'TIME_LIMIT_EXCEEDED' && 
-      status !== 'MEMORY_LIMIT_EXCEEDED' && 
-      status !== 'RUNTIME_ERROR' &&
-      (data.status === 'error' || (data.error && data.error.toLowerCase().includes('compile')))
-    ) {
-      status = 'COMPILATION_ERROR';
-      error = data.error;
     }
 
     let outputStr = data.output || '';
