@@ -89,7 +89,7 @@ export default function Home() {
           </h1>
 
           <p className="text-zinc-400 text-lg max-w-lg leading-relaxed">
-            An interactive problem-solving platform (similar to LeetCode) designed to practice and attempt challenges in Data Structures, Algorithms, and Competitive Programming. We also provide a standalone compiler playground as a helpful add-on to run any custom code.
+            An interactive problem-solving platform designed to practice and attempt challenges in Data Structures, Algorithms, and Competitive Programming. We also provide a standalone compiler playground as a helpful add-on to run any custom code.
           </p>
 
           {error && (
