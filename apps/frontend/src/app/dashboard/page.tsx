@@ -6,7 +6,7 @@ import { useAuthStore } from '@/lib/store';
 import api from '@/lib/api';
 import { 
   Trophy, LogOut, Code2, Play, Trash2, 
-  Sparkles, CheckCircle2, ChevronRight, RefreshCw, FileCode 
+  Sparkles, CheckCircle2, ChevronRight, RefreshCw, FileCode, Terminal 
 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -93,13 +93,23 @@ export default function Dashboard() {
       {/* Navigation */}
       <nav className="w-full border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-20">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-tr from-violet-600 to-indigo-600 p-2 rounded-xl">
-              <Code2 className="h-5 w-5 text-white" />
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="bg-gradient-to-tr from-violet-600 to-indigo-600 p-2 rounded-xl">
+                <Code2 className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-bold text-lg tracking-tight">
+                CodeRudra
+              </span>
             </div>
-            <span className="font-bold text-lg tracking-tight">
-              CodeRudra <span className="text-violet-500">AI</span>
-            </span>
+
+            <button
+              onClick={() => router.push('/playground')}
+              className="text-xs font-semibold text-zinc-400 hover:text-white transition-all duration-150 flex items-center gap-1.5 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/80 px-3 py-1.5 rounded-lg cursor-pointer"
+            >
+              <Terminal className="h-3.5 w-3.5 text-violet-400" />
+              <span>Compiler Playground</span>
+            </button>
           </div>
 
           <div className="flex items-center gap-4">

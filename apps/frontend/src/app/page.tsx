@@ -62,7 +62,7 @@ export default function Home() {
             <Code2 className="h-6 w-6 text-white" />
           </div>
           <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
-            CodeRudra <span className="text-violet-500">AI</span>
+            CodeRudra
           </span>
         </div>
 
@@ -156,6 +156,16 @@ export default function Home() {
                 <Cpu className="h-5 w-5 text-violet-400" />
               )}
               <span>Developer Login</span>
+            </button>
+          </div>
+
+          <div className="w-full max-w-md flex items-center justify-center mt-2">
+            <button
+              onClick={() => router.push('/playground')}
+              className="w-full flex items-center justify-center gap-2 border border-violet-950 bg-violet-950/20 hover:bg-violet-950/40 text-violet-400 hover:text-white font-semibold px-6 py-3 rounded-xl active:scale-95 transition-all duration-200 cursor-pointer"
+            >
+              <Terminal className="h-5 w-5 text-violet-400" />
+              <span>Compiler Playground (No Login Required)</span>
             </button>
           </div>
         </div>

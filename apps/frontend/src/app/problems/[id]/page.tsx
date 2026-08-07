@@ -289,6 +289,15 @@ export default function ProblemWorkspace() {
 
         <div className="flex items-center gap-3">
           <button
+            onClick={() => router.push('/playground')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 text-zinc-300 text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+            title="Go to independent compiler playground"
+          >
+            <Terminal className="h-3.5 w-3.5 text-violet-400" />
+            <span>Playground</span>
+          </button>
+
+          <button
             onClick={() => setShowSaveModal(true)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 text-zinc-300 text-xs font-semibold cursor-pointer active:scale-95 transition-all"
           >

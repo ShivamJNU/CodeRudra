@@ -9,6 +9,15 @@ export class SubmissionsService {
     private executionService: ExecutionService,
   ) {}
 
+  async executePublic(data: { sourceCode: string; language: string; input?: string }) {
+    // Run code once against custom input without saving to database (anonymous execution)
+    return this.executionService.execute({
+      sourceCode: data.sourceCode,
+      language: data.language,
+      input: data.input,
+    });
+  }
+
   async execute(userId: string, data: { sourceCode: string; language: string; input?: string }) {
     // Run code once against custom input
     const result = await this.executionService.execute({
