@@ -290,10 +290,10 @@ export default function ProblemWorkspace() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/playground')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 text-zinc-300 text-xs font-semibold cursor-pointer active:scale-95 transition-all"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600/20 to-indigo-600/20 hover:from-violet-600/45 hover:to-indigo-600/45 border border-violet-500/30 text-zinc-200 hover:text-white text-xs font-semibold cursor-pointer active:scale-95 transition-all"
             title="Go to independent compiler playground"
           >
-            <Terminal className="h-3.5 w-3.5 text-violet-400" />
+            <Terminal className="h-4 w-4 text-violet-400" />
             <span>Playground</span>
           </button>
 

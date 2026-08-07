@@ -105,9 +105,9 @@ export default function Dashboard() {
 
             <button
               onClick={() => router.push('/playground')}
-              className="text-xs font-semibold text-zinc-400 hover:text-white transition-all duration-150 flex items-center gap-1.5 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800/80 px-3 py-1.5 rounded-lg cursor-pointer"
+              className="text-sm font-semibold text-zinc-200 hover:text-white transition-all duration-150 flex items-center gap-2 bg-gradient-to-r from-violet-600/20 to-indigo-600/20 hover:from-violet-600/45 hover:to-indigo-600/45 border border-violet-500/30 px-4 py-2 rounded-xl cursor-pointer"
             >
-              <Terminal className="h-3.5 w-3.5 text-violet-400" />
+              <Terminal className="h-4 w-4 text-violet-400" />
               <span>Compiler Playground</span>
             </button>
           </div>
