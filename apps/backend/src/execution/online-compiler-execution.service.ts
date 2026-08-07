@@ -37,13 +37,19 @@ export class OnlineCompilerExecutionService extends ExecutionService {
     const exitCode = data.exit_code;
     const signal = data.signal;
 
+    const isInternalError = 
+      (data.error && data.error.includes('Internal error: code execution failed')) ||
+      (exitCode === -1 && data.error && data.error.includes('Internal error: code execution failed'));
+
     const isTimeout = 
       exitCode === 124 || 
       data.status === 'timeout' || 
-      (data.error && data.error.toLowerCase().includes('timeout')) ||
-      (exitCode === -1 && data.error && data.error.includes('Internal error: code execution failed'));
+      (data.error && data.error.toLowerCase().includes('timeout'));
 
-    if (isTimeout) {
+    if (isInternalError) {
+      status = 'RUNTIME_ERROR';
+      error = 'Error';
+    } else if (isTimeout) {
       status = 'TIME_LIMIT_EXCEEDED';
       error = data.error || 'Time Limit Exceeded';
     } else if (exitCode === 137 || signal === 9 || signal === '9') {
@@ -69,10 +75,11 @@ export class OnlineCompilerExecutionService extends ExecutionService {
       }
     }
 
-    // Check if compilation failed (only if not already marked as TLE/OOM)
+    // Check if compilation failed (only if not already marked as TLE/OOM/RUNTIME_ERROR)
     if (
       status !== 'TIME_LIMIT_EXCEEDED' && 
       status !== 'MEMORY_LIMIT_EXCEEDED' && 
+      status !== 'RUNTIME_ERROR' &&
       (data.status === 'error' || (data.error && data.error.toLowerCase().includes('compile')))
     ) {
       status = 'COMPILATION_ERROR';
