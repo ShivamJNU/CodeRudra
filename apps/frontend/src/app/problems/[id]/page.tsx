@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuthStore, useEditorStore } from '@/lib/store';
 import api from '@/lib/api';
 import Editor from '@monaco-editor/react';
+import Latex from '@/components/Latex';
 import { 
   ArrowLeft, Terminal, Cpu, Play, CheckCircle2, 
   Save, AlertTriangle, FileUp, Sparkles, Code2, 
@@ -378,29 +379,29 @@ export default function ProblemWorkspace() {
                 </div>
 
                 <div className="prose prose-invert max-w-none text-zinc-300 text-sm">
-                  <p className="whitespace-pre-wrap">{problem.description}</p>
+                  <Latex text={problem.description} />
                 </div>
 
                 {problem.constraints && (
                   <div>
                     <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-2">Constraints</h4>
-                    <pre className="p-3 bg-zinc-900/50 border border-zinc-900 rounded-xl text-xs font-mono text-zinc-400 leading-normal whitespace-pre-wrap">
-                      {problem.constraints}
-                    </pre>
+                    <div className="p-4 bg-zinc-900/30 border border-zinc-900/60 rounded-xl text-xs text-zinc-400 leading-normal">
+                      <Latex text={problem.constraints} />
+                    </div>
                   </div>
                 )}
 
                 {problem.inputFormat && (
                   <div>
                     <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-2">Input Format</h4>
-                    <p className="text-zinc-400 text-xs">{problem.inputFormat}</p>
+                    <Latex text={problem.inputFormat} className="text-zinc-400 text-xs" />
                   </div>
                 )}
 
                 {problem.outputFormat && (
                   <div>
                     <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-2">Output Format</h4>
-                    <p className="text-zinc-400 text-xs">{problem.outputFormat}</p>
+                    <Latex text={problem.outputFormat} className="text-zinc-400 text-xs" />
                   </div>
                 )}
 
