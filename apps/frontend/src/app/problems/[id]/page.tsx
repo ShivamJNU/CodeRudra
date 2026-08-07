@@ -647,7 +647,7 @@ export default function ProblemWorkspace() {
                                 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' 
                                 : 'bg-red-500/10 border-red-500/20 text-red-400'
                             }`}>
-                              {runResult.status}
+                              {runResult.status === 'ACCEPTED' ? 'Run Successful' : runResult.status}
                             </span>
                             <span className="text-zinc-500">|</span>
                             <span className="text-zinc-400">Runtime: {runResult.runtime ?? 0}s</span>
