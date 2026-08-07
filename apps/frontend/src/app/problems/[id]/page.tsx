@@ -688,6 +688,13 @@ export default function ProblemWorkspace() {
                           </div>
                         </div>
 
+                        {runResult.status === 'ACCEPTED' && (
+                          <div className="flex items-center gap-2.5 p-3 bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 rounded-xl select-none animate-in fade-in slide-in-from-top-1 duration-200">
+                            <CheckCircle2 className="h-4 w-4 shrink-0" />
+                            <span className="font-bold text-[11px] tracking-wide">Congrats, all testcases passed!</span>
+                          </div>
+                        )}
+
                         {/* Code Execution text stream */}
                         {runResult.error ? (
                           <div className="flex flex-col gap-1">
