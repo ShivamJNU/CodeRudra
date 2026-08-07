@@ -80,16 +80,16 @@ export default function Home() {
         <div className="flex-1 flex flex-col items-start text-left gap-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-semibold tracking-wide">
             <Sparkles className="h-3 w-3 animate-pulse" />
-            <span>LeetCode-Style DSA & Problem Solving Platform</span>
+            <span>DSA & Competitive Programming Practice Platform</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
-            Elevate Your <br />
-            Coding <span className="bg-gradient-to-r from-violet-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">Craftsmanship</span>
+            Master DSA & <br />
+            Problem <span className="bg-gradient-to-r from-violet-400 via-indigo-400 to-emerald-400 bg-clip-text text-transparent">Solving</span>
           </h1>
 
           <p className="text-zinc-400 text-lg max-w-lg leading-relaxed">
-            Write, execute, and evaluate programs in C++ and Python. A premium LeetCode-style sandboxed judge environment built for practicing Data Structures, Algorithms, and Competitive Programming.
+            An interactive problem-solving platform (similar to LeetCode) designed to practice and attempt challenges in Data Structures, Algorithms, and Competitive Programming. We also provide a standalone compiler playground as a helpful add-on to run any custom code.
           </p>
 
           {error && (
