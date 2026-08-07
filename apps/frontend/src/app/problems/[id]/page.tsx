@@ -94,6 +94,16 @@ export default function ProblemWorkspace() {
   // File Upload reference
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load saved language from localStorage on mount or problem ID change
+  useEffect(() => {
+    if (typeof window !== 'undefined' && id) {
+      const savedLang = localStorage.getItem(`coderudra-lang-${id}`);
+      if (savedLang) {
+        setLanguage(savedLang as any);
+      }
+    }
+  }, [id, setLanguage]);
+
   // Load saved code from localStorage on mount, language change, or problem ID change
   useEffect(() => {
     if (typeof window !== 'undefined' && id && language) {
@@ -109,6 +119,13 @@ export default function ProblemWorkspace() {
     setCode(val);
     if (typeof window !== 'undefined' && id && language) {
       localStorage.setItem(`coderudra-code-${id}-${language}`, val);
+    }
+  };
+
+  const handleLanguageChange = (newLang: any) => {
+    setLanguage(newLang);
+    if (typeof window !== 'undefined' && id) {
+      localStorage.setItem(`coderudra-lang-${id}`, newLang);
     }
   };
 
@@ -475,7 +492,7 @@ export default function ProblemWorkspace() {
                 <span>Language:</span>
                 <select 
                   value={language}
-                  onChange={(e) => setLanguage(e.target.value as any)}
+                  onChange={(e) => handleLanguageChange(e.target.value as any)}
                   className="bg-transparent text-white focus:outline-none capitalize font-bold cursor-pointer"
                 >
                   <option value="cpp" className="bg-zinc-950 text-white">C++ (GCC 14)</option>
