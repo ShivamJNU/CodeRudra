@@ -405,11 +405,11 @@ export default function ProblemWorkspace() {
                 )}
 
                 {/* Sample Testcases */}
-                {problem.testCases && problem.testCases.length > 0 && (
+                {problem.testCases && problem.testCases.filter((tc: any) => tc.isSample).length > 0 && (
                   <div>
                     <h4 className="font-bold text-sm text-zinc-200 uppercase tracking-wider border-b border-zinc-900 pb-2 mb-3">Sample Examples</h4>
                     <div className="flex flex-col gap-4">
-                      {problem.testCases.map((tc: any, index: number) => (
+                      {problem.testCases.filter((tc: any) => tc.isSample).map((tc: any, index: number) => (
                         <div key={tc.id || index} className="grid grid-cols-2 gap-4">
                           <div className="flex flex-col gap-1.5">
                             <span className="text-[10px] text-zinc-500 font-bold uppercase">Sample Input {index + 1}</span>
