@@ -4,13 +4,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 import api from '@/lib/api';
-import { Code2, Terminal, Shield, Cpu, Github, Sparkles } from 'lucide-react';
+import { Code2, Github, Terminal, Sparkles } from 'lucide-react';
 
 export default function Home() {
   const router = useRouter();
-  const { isAuthenticated, setToken, setUser, initializeAuth } = useAuthStore();
+  const { initializeAuth, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     initializeAuth();
@@ -20,38 +20,35 @@ export default function Home() {
   }, [router, initializeAuth]);
 
   const handleGoogleLogin = () => {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    window.location.href = `${apiUrl}/auth/google`;
+    // Redirect to backend OAuth route
+    window.location.href = 'http://localhost:5000/auth/google';
   };
 
   const handleDevBypassLogin = async () => {
     setLoading(true);
-    setError('');
+    setError(null);
     try {
-      // Call token exchange with mock dev-token
       const res = await api.post('/auth/google', { token: 'dev-token' });
-      const { accessToken } = res.data;
-      setToken(accessToken);
-
-      // Get user profile
-      const userRes = await api.get('/me');
-      setUser(userRes.data);
-
+      const { accessToken, user } = res.data;
+      
+      useAuthStore.getState().setToken(accessToken);
+      useAuthStore.getState().setUser(user);
+      
       router.push('/dashboard');
     } catch (err: any) {
       console.error(err);
-      setError('Connection to backend failed. Make sure NestJS app is running on port 5000.');
+      setError('Dev Login Bypass failed. Ensure backend NestJS is running.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen bg-zinc-950 text-zinc-50 flex flex-col items-center justify-between font-sans overflow-hidden">
-      {/* Background Decorative Gradients */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-violet-600/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-600/10 blur-[120px] pointer-events-none" />
-      
+    <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans flex flex-col relative overflow-hidden">
+      {/* Decorative Gradient Background */}
+      <div className="absolute top-[-30%] left-[-10%] w-[60%] h-[60%] rounded-full bg-violet-600/10 blur-[130px] pointer-events-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-emerald-600/5 blur-[130px] pointer-events-none" />
+
       {/* Background Grid Pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29370a_1px,transparent_1px),linear-gradient(to_bottom,#1f29370a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none opacity-50" />
 
@@ -92,26 +89,8 @@ export default function Home() {
           </h1>
 
           <p className="text-zinc-400 text-lg max-w-lg leading-relaxed">
-            Write, execute, and evaluate programs in C++, Java, and Python. A premium, sandboxed code execution playground designed for engineers.
+            Write, execute, and evaluate programs in C++ and Python. A premium, sandboxed code execution playground designed for engineers.
           </p>
-
-          <div className="grid grid-cols-2 gap-4 w-full max-w-md mt-2">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/80">
-              <Terminal className="h-5 w-5 text-emerald-400" />
-              <div className="text-left">
-                <p className="text-xs text-zinc-500 font-medium">Languages</p>
-                <p className="text-sm font-semibold text-zinc-200">C++, Java, Python</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-900/50 border border-zinc-800/80">
-              <Shield className="h-5 w-5 text-violet-400" />
-              <div className="text-left">
-                <p className="text-xs text-zinc-500 font-medium">Security</p>
-                <p className="text-sm font-semibold text-zinc-200">Sandboxed Runtime</p>
-              </div>
-            </div>
-          </div>
 
           {error && (
             <div className="p-3 text-sm rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 w-full max-w-md mt-2">
@@ -121,8 +100,16 @@ export default function Home() {
 
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md mt-4">
             <button
+              onClick={() => router.push('/playground')}
+              className="flex-grow flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold px-6 py-3.5 rounded-xl active:scale-95 transition-all duration-200 shadow-lg shadow-violet-600/10 cursor-pointer"
+            >
+              <Terminal className="h-5 w-5 text-violet-200" />
+              <span>Playground (C++ & Python)</span>
+            </button>
+
+            <button
               onClick={handleGoogleLogin}
-              className="flex-1 flex items-center justify-center gap-3 bg-white text-zinc-950 font-semibold px-6 py-3 rounded-xl hover:bg-zinc-200 active:scale-95 transition-all duration-200 shadow-lg cursor-pointer"
+              className="flex-grow flex items-center justify-center gap-3 bg-white text-zinc-950 font-bold px-6 py-3.5 rounded-xl hover:bg-zinc-200 active:scale-95 transition-all duration-200 shadow-lg cursor-pointer"
             >
               <svg className="h-5 w-5" viewBox="0 0 24 24">
                 <path
@@ -143,29 +130,6 @@ export default function Home() {
                 />
               </svg>
               <span>Google Sign In</span>
-            </button>
-
-            <button
-              onClick={handleDevBypassLogin}
-              disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-900 hover:border-zinc-700 text-zinc-200 font-semibold px-6 py-3 rounded-xl active:scale-95 transition-all duration-200 cursor-pointer disabled:opacity-50"
-            >
-              {loading ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-400 border-t-transparent" />
-              ) : (
-                <Cpu className="h-5 w-5 text-violet-400" />
-              )}
-              <span>Developer Login</span>
-            </button>
-          </div>
-
-          <div className="w-full max-w-md flex items-center justify-center mt-2">
-            <button
-              onClick={() => router.push('/playground')}
-              className="w-full flex items-center justify-center gap-2 border border-violet-950 bg-violet-950/20 hover:bg-violet-950/40 text-violet-400 hover:text-white font-semibold px-6 py-3 rounded-xl active:scale-95 transition-all duration-200 cursor-pointer"
-            >
-              <Terminal className="h-5 w-5 text-violet-400" />
-              <span>Compiler Playground (No Login Required)</span>
             </button>
           </div>
         </div>
@@ -188,17 +152,15 @@ export default function Home() {
 
             {/* Code lines mockup */}
             <div className="p-5 font-mono text-sm leading-relaxed text-left select-none text-zinc-400">
-              <div><span className="text-violet-400">#include</span> <span className="text-emerald-400">&lt;iostream&gt;</span></div>
-              <div><span className="text-zinc-600">1</span></div>
-              <div><span className="text-violet-400">int</span> <span className="text-indigo-400">fib</span>(<span className="text-violet-400">int</span> n) &#123;</div>
-              <div><span className="text-zinc-600">2</span>   <span className="text-violet-400">if</span> (n &lt;= <span className="text-amber-400">1</span>) <span className="text-violet-400">return</span> n;</div>
-              <div><span className="text-zinc-600">3</span>   <span className="text-violet-400">return</span> <span className="text-indigo-400">fib</span>(n-<span className="text-amber-400">1</span>) + <span className="text-indigo-400">fib</span>(n-<span className="text-amber-400">2</span>);</div>
-              <div><span className="text-zinc-600">4</span> &#125;</div>
-              <div><span className="text-zinc-600">5</span></div>
-              <div><span className="text-violet-400">int</span> <span className="text-indigo-400">main</span>() &#123;</div>
-              <div><span className="text-zinc-600">6</span>   std::cout &lt;&lt; <span className="text-indigo-400">fib</span>(<span className="text-amber-400">10</span>); <span className="text-zinc-600">// Output: 55</span></div>
-              <div><span className="text-zinc-600">7</span>   <span className="text-violet-400">return</span> <span className="text-amber-400">0</span>;</div>
-              <div><span className="text-zinc-600">8</span> &#125;</div>
+              <p><span className="text-violet-400">#include</span> <span className="text-emerald-400">&lt;iostream&gt;</span></p>
+              <p><span className="text-violet-400">int</span> <span className="text-indigo-400">fib</span>(<span className="text-violet-400">int</span> n) &#123;</p>
+              <p className="pl-4"><span className="text-violet-400">if</span> (n &lt;= <span className="text-emerald-400">1</span>) <span className="text-violet-400">return</span> n;</p>
+              <p className="pl-4"><span className="text-violet-400">return</span> <span className="text-indigo-400">fib</span>(n-<span className="text-emerald-400">1</span>) + <span className="text-indigo-400">fib</span>(n-<span className="text-emerald-400">2</span>);</p>
+              <p>&#125;</p>
+              <p><span className="text-violet-400">int</span> <span className="text-indigo-400">main</span>() &#123;</p>
+              <p className="pl-4">std::cout &lt;&lt; <span className="text-indigo-400">fib</span>(<span className="text-emerald-400">10</span>);</p>
+              <p className="pl-4"><span className="text-violet-400">return</span> <span className="text-emerald-400">0</span>;</p>
+              <p>&#125;</p>
             </div>
 
             {/* Simulated output console */}
@@ -207,7 +169,7 @@ export default function Home() {
                 <span className="text-xs text-zinc-500 font-bold uppercase tracking-wider">Console Output</span>
                 <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded font-bold">ACCEPTED</span>
               </div>
-              <p className="text-xs font-mono text-zinc-300">55</p>
+              <p className="text-xs font-mono text-zinc-300 font-bold">55</p>
               <div className="flex items-center gap-3 text-[10px] text-zinc-500 font-mono mt-1">
                 <span>Time: 0.04s</span>
                 <span>Memory: 4320 KB</span>
@@ -218,8 +180,18 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 text-center text-xs text-zinc-600 z-10">
+      <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-600 z-10">
         <p>&copy; {new Date().getFullYear()} CodeRudra. Crafted for the ultimate coding challenge.</p>
+        
+        {/* Relatively hidden developer bypass login */}
+        <button
+          onClick={handleDevBypassLogin}
+          disabled={loading}
+          className="text-[10px] text-zinc-900 hover:text-zinc-700 transition-colors duration-150 cursor-pointer disabled:opacity-30"
+          title="Developer Login Bypass"
+        >
+          {loading ? 'Logging in...' : 'Dev Admin'}
+        </button>
       </footer>
     </div>
   );
