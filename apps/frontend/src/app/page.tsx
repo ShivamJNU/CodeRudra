@@ -10,13 +10,27 @@ export default function Home() {
   const router = useRouter();
   const { initializeAuth, isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    initializeAuth();
-    if (useAuthStore.getState().isAuthenticated) {
-      router.push('/dashboard');
-    }
+    const checkAuth = async () => {
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setCheckingAuth(false);
+          return;
+        }
+      }
+
+      await initializeAuth();
+      if (useAuthStore.getState().isAuthenticated) {
+        router.push('/dashboard');
+      } else {
+        setCheckingAuth(false);
+      }
+    };
+    checkAuth();
   }, [router, initializeAuth]);
 
   const handleGoogleLogin = () => {
@@ -42,6 +56,14 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 rounded-full border-4 border-violet-500 border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-50 font-sans flex flex-col relative overflow-hidden">
