@@ -86,6 +86,7 @@ export default function ProblemWorkspace() {
   const [submitting, setSubmitting] = useState(false);
   const [runResult, setRunResult] = useState<any>(null);
   const [consoleTab, setConsoleTab] = useState<'input' | 'output'>('output');
+  const [lastAction, setLastAction] = useState<'run' | 'submit' | null>(null);
 
   // Save code modal states
   const [showSaveModal, setShowSaveModal] = useState(false);
@@ -192,6 +193,7 @@ export default function ProblemWorkspace() {
   const handleRunCode = async () => {
     setExecuting(true);
     setConsoleTab('output');
+    setLastAction('run');
     setRunResult({ status: 'RUNNING', message: 'Compiling & Running...' });
 
     try {
@@ -217,6 +219,7 @@ export default function ProblemWorkspace() {
   const handleSubmitCode = async () => {
     setSubmitting(true);
     setConsoleTab('output');
+    setLastAction('submit');
     setRunResult({ status: 'RUNNING', message: 'Running test cases against solution...' });
 
     try {
@@ -678,7 +681,7 @@ export default function ProblemWorkspace() {
                                 : 'bg-red-500/10 border-red-500/20 text-red-400'
                             }`}>
                               {runResult.status === 'ACCEPTED' 
-                                ? 'Run Successful' 
+                                ? (lastAction === 'submit' ? 'All testcases passed' : 'Run Successful') 
                                 : (language === 'python' && (runResult.status === 'COMPILATION_ERROR' || runResult.status === 'RUNTIME_ERROR') ? 'ERROR' : runResult.status)}
                             </span>
                             <span className="text-zinc-500">|</span>
@@ -688,7 +691,7 @@ export default function ProblemWorkspace() {
                           </div>
                         </div>
 
-                        {runResult.status === 'ACCEPTED' && (
+                        {runResult.status === 'ACCEPTED' && lastAction === 'submit' && (
                           <div className="flex items-center gap-2.5 p-3 bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 rounded-xl select-none animate-in fade-in slide-in-from-top-1 duration-200">
                             <CheckCircle2 className="h-4 w-4 shrink-0" />
                             <span className="font-bold text-[11px] tracking-wide">Congrats, all testcases passed!</span>
