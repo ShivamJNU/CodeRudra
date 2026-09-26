@@ -23,6 +23,11 @@ export default function Playground() {
 
   // Load saved code from local storage on mount
   useEffect(() => {
+    // Keep-alive ping to database without requiring user login
+    api.get('/ping-db').catch((err) => {
+      console.debug('Database keep-alive ping:', err?.message || err);
+    });
+
     initializeAuth();
     
     // Load local storage preferences

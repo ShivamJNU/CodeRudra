@@ -14,6 +14,11 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Keep-alive ping to Supabase database without requiring user login
+    api.get('/ping-db').catch((err) => {
+      console.debug('Database keep-alive ping:', err?.message || err);
+    });
+
     const checkAuth = async () => {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('token');

@@ -17,6 +17,32 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     }
   }
 
+  async pingDatabase() {
+    try {
+      // Execute a real SQL query against Supabase PostgreSQL to prevent inactivity pause
+      const pingResult: any = await this.$queryRaw`SELECT 1 as ping, NOW() as server_time`;
+      this.isConnected = true;
+
+      // Also touch the Problem table to ensure table-level query activity
+      const problemCount = await this.problem.count().catch(() => 0);
+
+      return {
+        status: 'OK',
+        database: 'connected',
+        serverTime: pingResult?.[0]?.server_time || new Date(),
+        problemCount,
+      };
+    } catch (err: any) {
+      console.warn('Database ping query failed:', err.message || err);
+      return {
+        status: 'DEGRADED',
+        database: 'error',
+        error: err.message || 'Database unavailable',
+        timestamp: new Date(),
+      };
+    }
+  }
+
   async onModuleDestroy() {
     await this.$disconnect();
   }

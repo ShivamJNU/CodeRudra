@@ -20,6 +20,11 @@ export class AppController {
     return { status: 'OK', timestamp: new Date() };
   }
 
+  @Get('ping-db')
+  async pingDb() {
+    return this.appService.pingDatabase();
+  }
+
   @Get('me')
   @UseGuards(JwtAuthGuard)
   getMe(@Req() req: any) {
