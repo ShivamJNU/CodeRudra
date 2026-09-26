@@ -12,12 +12,19 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dbStatus, setDbStatus] = useState<'checking' | 'active' | 'error'>('checking');
 
   useEffect(() => {
     // Keep-alive ping to Supabase database without requiring user login
-    api.get('/ping-db').catch((err) => {
-      console.debug('Database keep-alive ping:', err?.message || err);
-    });
+    api.get('/ping-db')
+      .then((res) => {
+        console.log('✅ Supabase Keep-Alive query successful:', res.data);
+        setDbStatus('active');
+      })
+      .catch((err) => {
+        console.warn('⚠️ Supabase Keep-Alive ping error:', err?.message || err);
+        setDbStatus('error');
+      });
 
     const checkAuth = async () => {
       if (typeof window !== 'undefined') {
@@ -209,7 +216,22 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto px-6 py-8 border-t border-zinc-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-600 z-10">
-        <p>&copy; {new Date().getFullYear()} CodeRudra. Crafted for the ultimate coding challenge.</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p>&copy; {new Date().getFullYear()} CodeRudra. Crafted for the ultimate coding challenge.</p>
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-900/80 border border-zinc-800/80">
+            <span className="flex h-2 w-2 relative">
+              {dbStatus === 'active' && (
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              )}
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${
+                dbStatus === 'active' ? 'bg-emerald-500' : dbStatus === 'error' ? 'bg-amber-500' : 'bg-zinc-600 animate-pulse'
+              }`}></span>
+            </span>
+            <span className="text-[11px] text-zinc-400 font-mono">
+              {dbStatus === 'active' ? 'Supabase Active' : dbStatus === 'error' ? 'DB Standby' : 'Connecting DB...'}
+            </span>
+          </div>
+        </div>
         
         {/* Relatively hidden developer bypass login */}
         <button
